@@ -6,10 +6,21 @@ records, works out what the passenger is owed as distinct from what they asked f
 finds out what options exist right now, and then either acts or hands the case to a
 human with enough to decide on.
 
-> **The supplied brief has moved to `ASSESSMENT-BRIEF.md`, byte for byte unaltered**
-> (sha256 `a3c90eb809170351b07262c70373951e3ad91180e38e06e45e783d659d583fce`). Only its filename changed, so that
-> this file — how to run what I built — is what you land on first. The reasoning is in
-> `DECISIONS.md`.
+> **The supplied brief has moved to `ASSESSMENT-BRIEF.md`, byte for byte unaltered.**
+> Only its filename changed, so that this file — how to run what I built — is what you
+> land on first. The reasoning is in `DECISIONS.md`.
+>
+> Verify it against the commit you supplied, which is the check that actually means
+> something:
+>
+> ```bash
+> git diff 205775d:README.md HEAD:ASSESSMENT-BRIEF.md   # no output: identical
+> ```
+>
+> As stored, both are sha256 `68d5c88f9f7f68143e5ec4cb946aa7772da857eea0631c29bce048c76d97a99f`.
+> Hashing the checked-out file on Windows gives something else — `core.autocrlf` rewrites
+> the line endings on checkout — which is why the comparison above is against the blob
+> rather than the working copy.
 
 ---
 
