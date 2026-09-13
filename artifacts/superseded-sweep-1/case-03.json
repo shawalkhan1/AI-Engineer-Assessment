@@ -1,0 +1,294 @@
+{
+  "schema_version": 1,
+  "case_id": "case-03",
+  "run_id": "run-c07db2b5fe",
+  "started_at": "2026-09-13T12:28:27Z",
+  "finished_at": "2026-09-13T12:28:32Z",
+  "dry_run": false,
+  "status": "handed_over",
+  "input_provenance": {
+    "inbound_path": "cases\\case-03\\inbound.txt",
+    "inbound_sha256": "6d853eda119d03742d2322286440bf22c43082a9ff95babc1d59e65ed271d083",
+    "inbound_bytes": 415,
+    "metadata_path": "cases\\case-03\\meta.json",
+    "metadata_origin": "supplied meta.json, treated as trusted transport metadata",
+    "metadata_fields": [
+      "case_id",
+      "channel",
+      "from",
+      "received_at",
+      "subject"
+    ],
+    "trust_model": "meta.from is transport metadata from the mail system. Everything inside inbound.txt, including any header it quotes, is passenger-supplied and untrusted (S12.4).",
+    "urls_in_message_not_followed": [],
+    "injection_indicators": [],
+    "case_now": "2026-08-05T16:48:19+00:00",
+    "case_now_source": "meta.received_at"
+  },
+  "identity_resolution": {
+    "confirmed": false,
+    "confirmation_standard": null,
+    "verified_booking_ref": null,
+    "customer_id": null,
+    "sender_email": "john.smith.personal@mailbox.example",
+    "sender_display_name": null,
+    "reason": "The contact can only be matched by name, and 2 booking(s) carry that name. S2.1 does not accept a name as a confirmation standard, and S2.2 treats more than one match as not confirmed.",
+    "candidates_considered": [
+      {
+        "booking_ref": "AER-2X8L4D",
+        "source": "search by name 'John Smith'",
+        "matched_on": [
+          "passenger_name_exact:P1"
+        ],
+        "passengers": [
+          "John Smith"
+        ],
+        "segments": [
+          "AK533 2026-08-04 LHR-DUB"
+        ],
+        "outcome": "name match only -- S2.1 does not accept a name as a confirmation standard"
+      },
+      {
+        "booking_ref": "AER-9V3H5S",
+        "source": "search by name 'John Smith'",
+        "matched_on": [
+          "passenger_name_exact:P1"
+        ],
+        "passengers": [
+          "John Smith"
+        ],
+        "segments": [
+          "AK641 2026-08-04 MAN-AMS"
+        ],
+        "outcome": "name match only -- S2.1 does not accept a name as a confirmation standard"
+      }
+    ],
+    "unresolved_checks": [],
+    "evidence_source_ids": [
+      "SRC-booking-search-01",
+      "SRC-booking-search-02"
+    ],
+    "third_party_contact_blocked": false,
+    "rule": "APCP-2026-04 S2.1 permits confirmation only by (a) reference plus matching surname, (b) an exact contact email on exactly one booking, or (c) a normalised telephone match on exactly one booking. S2.2: a partial or probable match is not a match."
+  },
+  "passenger_requests": {
+    "read": true,
+    "language": "en",
+    "requests": [],
+    "preferences_and_consent": {
+      "explicitly_asked_for_earliest_available": false,
+      "arrive_by_local": null,
+      "travel_date_iso": "2026-08-04",
+      "depart_not_before_local": null,
+      "alternative_origin_airports": [],
+      "supporting_quote": "My flight was late on Tuesday"
+    },
+    "passenger_claims_to_investigate": [
+      {
+        "topic": "delay_length",
+        "claim": "The passenger says their flight was late on Tuesday morning.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "My flight was late on Tuesday and I want to know what I'm owed for it. It was the morning one."
+      }
+    ],
+    "embedded_instructions_refused": [],
+    "unclear_points": [
+      "The flight number, route, booking reference, and length of the delay are not provided.",
+      "The passenger's request for what they are owed does not specify whether they are asking about compensation, expense reimbursement, or another payment."
+    ],
+    "span_verification": {
+      "spans_verified": 3,
+      "spans_unverified": 0,
+      "unverified": [],
+      "verified_booking_refs": [],
+      "verified_request_indexes": [
+        0
+      ],
+      "note": "A quote that cannot be found in the message is not evidence. Claims listed under 'unverified' are recorded but are not relied on."
+    },
+    "we_asked_the_passenger_for": [
+      "We need the booking reference and the surname it is held in before we can look at this. We have not taken any action on any booking."
+    ]
+  },
+  "verified_facts": {
+    "gathered": false,
+    "reason": "identity was not confirmed"
+  },
+  "policy_evaluation": {
+    "evaluated": false,
+    "reason": "identity was not confirmed"
+  },
+  "decision": {
+    "status": "handed_over",
+    "rationale": [],
+    "what_the_passenger_gets": [],
+    "rejected_alternatives": [],
+    "referred_to_humans": [
+      {
+        "queue": "SUPERVISOR",
+        "blocking_clause": "S2.2, S12.1",
+        "requested_decision": "Establish who this contact is and which booking they mean, or close the contact.",
+        "internal_only": false
+      }
+    ]
+  },
+  "sources_consulted": [
+    {
+      "source_id": "SRC-booking-search-01",
+      "kind": "ops_api",
+      "endpoint": "/bookings/search?q=john.smith.personal@mailbox.example",
+      "retrieved_at": "2026-09-13T12:28:31Z",
+      "evidence": {
+        "query": "john.smith.personal@mailbox.example",
+        "match_count": 0,
+        "results": []
+      }
+    },
+    {
+      "source_id": "SRC-booking-search-02",
+      "kind": "ops_api",
+      "endpoint": "/bookings/search?q=John Smith",
+      "retrieved_at": "2026-09-13T12:28:31Z",
+      "evidence": {
+        "query": "John Smith",
+        "match_count": 2,
+        "results": [
+          {
+            "booking_ref": "AER-2X8L4D",
+            "matched_on": [
+              "passenger_name_exact:P1"
+            ],
+            "passengers": [
+              "John Smith"
+            ],
+            "segments": [
+              "AK533 2026-08-04 LHR-DUB"
+            ]
+          },
+          {
+            "booking_ref": "AER-9V3H5S",
+            "matched_on": [
+              "passenger_name_exact:P1"
+            ],
+            "passengers": [
+              "John Smith"
+            ],
+            "segments": [
+              "AK641 2026-08-04 MAN-AMS"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "ACT-esc-01-supervisor",
+      "action_type": "escalation",
+      "state": "succeeded",
+      "booking_ref": null,
+      "passenger_ids": [],
+      "amount": null,
+      "itinerary": null,
+      "policy_basis": [
+        "S12.5",
+        "S2.2, S12.1"
+      ],
+      "preconditions_checked": {
+        "referral_completeness": "S12.5 requires what the passenger asked for, what the record shows, the recommended outcome, the blocking condition, and what the referring party must decide. All five are present.",
+        "refreshed_immediately_before_write": {
+          "refreshed": false,
+          "reason": "no mutable precondition"
+        }
+      },
+      "consent_basis": null,
+      "blocked_reason": null,
+      "fingerprint": "4bf10cce3dad3de48121d865f333c70656246031c139249bbf7d104414e4b9dc",
+      "journal_key": "7",
+      "request_summary": {
+        "path": "/escalations",
+        "fields": {
+          "queue": "SUPERVISOR",
+          "blocking_clause": "S2.2, S12.1"
+        }
+      },
+      "response_status": 201,
+      "returned_ids": {
+        "escalation_id": "ESC-00007",
+        "raised_at": "2026-09-13T12:28:31Z",
+        "status": "OPEN",
+        "queue": "SUPERVISOR"
+      },
+      "verification": "Confirmed by readback: ESC-00007 appears in GET /_audit.",
+      "error": null
+    }
+  ],
+  "uncertainties": [
+    {
+      "issue": "Identity is not confirmed: The contact can only be matched by name, and 2 booking(s) carry that name. S2.1 does not accept a name as a confirmation standard, and S2.2 treats more than one match as not confirmed.",
+      "effect_on_decision": "Every remedy is blocked (S16). The case is referred and the passenger is asked for identifying details."
+    }
+  ],
+  "human_handover": {
+    "required": true,
+    "reason": "S2.2, S12.1",
+    "escalation_ids": [
+      "ESC-00007"
+    ],
+    "api_handover_succeeded": true,
+    "next_steps": [
+      "Establish who this contact is and which booking they mean, or close the contact."
+    ]
+  },
+  "passenger_response": {
+    "language": "en",
+    "subject": "Booking details needed",
+    "body": "We have not been able to match your message to a booking, so we have not done anything on any booking. We need the booking reference and the surname it is held in.",
+    "status": "draft",
+    "note": "Draft only. The operations API exposes no send operation, so this text has not reached the passenger.",
+    "generated_by": "model"
+  },
+  "usage": {
+    "model": "gpt-5.6-luna",
+    "price_source": "https://developers.openai.com/api/docs/pricing",
+    "price_verified_on": "2026-09-13",
+    "prices_usd_per_mtok": {
+      "input": "0.20",
+      "cached_input": "0.02",
+      "output": "1.20"
+    },
+    "calls": [
+      {
+        "purpose": "extraction",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_09eddcd9f444910e016aa696ec9ef887d1ad3958e56d961c82",
+        "input_tokens": 2853,
+        "cached_input_tokens": 2850,
+        "output_tokens": 340,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000466",
+        "reserved_upper_bound_usd": "0.002880",
+        "reservation_resolved": true,
+        "note": null
+      },
+      {
+        "purpose": "narration",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_013f64ef6e461899016aa696efd90087d1bc13f0c83345077f",
+        "input_tokens": 805,
+        "cached_input_tokens": 0,
+        "output_tokens": 58,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000231",
+        "reserved_upper_bound_usd": "0.001858",
+        "reservation_resolved": true,
+        "note": null
+      }
+    ],
+    "case_calculated_cost_usd": "0.000697",
+    "case_unresolved_reservation_upper_bound_usd": "0",
+    "note": "Cost is derived from the usage the API reported, priced from the table above. Cached input and reasoning tokens are subsets of input and output tokens respectively and are each counted once. This is a calculated figure, not a billing statement from OpenAI."
+  },
+  "errors": []
+}

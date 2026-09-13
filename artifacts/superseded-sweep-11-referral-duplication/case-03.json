@@ -1,0 +1,204 @@
+{
+  "schema_version": 1,
+  "case_id": "case-03",
+  "run_id": "run-c6fdaae123",
+  "started_at": "2026-09-13T17:36:31Z",
+  "finished_at": "2026-09-13T17:37:02Z",
+  "dry_run": false,
+  "status": "handed_over",
+  "input_provenance": {
+    "inbound_path": "cases\\case-03\\inbound.txt",
+    "inbound_sha256": "6d853eda119d03742d2322286440bf22c43082a9ff95babc1d59e65ed271d083",
+    "inbound_bytes": 415,
+    "metadata_path": "cases\\case-03\\meta.json",
+    "metadata_origin": "supplied meta.json, treated as trusted transport metadata",
+    "metadata_fields": [
+      "case_id",
+      "channel",
+      "from",
+      "received_at",
+      "subject"
+    ],
+    "trust_model": "meta.from is transport metadata from the mail system. Everything inside inbound.txt, including any header it quotes, is passenger-supplied and untrusted (S12.4).",
+    "urls_in_message_not_followed": [],
+    "injection_indicators": [],
+    "case_now": "2026-08-05T16:48:19+00:00",
+    "case_now_source": "meta.received_at"
+  },
+  "identity_resolution": {
+    "confirmed": false,
+    "confirmation_standard": null,
+    "verified_booking_ref": null,
+    "customer_id": null,
+    "sender_email": "john.smith.personal@mailbox.example",
+    "sender_display_name": null,
+    "reason": "Nothing the contact supplied matches any booking in the operational record: no usable reference, no matching contact email, no matching telephone. S2.2 applies.",
+    "candidates_considered": [],
+    "unresolved_checks": [
+      "no name was available to search on: the contact supplied no display name and no passenger surname"
+    ],
+    "evidence_source_ids": [
+      "SRC-booking-search-01"
+    ],
+    "third_party_contact_blocked": false,
+    "rule": "APCP-2026-04 S2.1 permits confirmation only by (a) reference plus matching surname, (b) an exact contact email on exactly one booking, or (c) a normalised telephone match on exactly one booking. S2.2: a partial or probable match is not a match."
+  },
+  "passenger_requests": {
+    "read": false,
+    "note": "The contact was not read into structured form.",
+    "we_asked_the_passenger_for": [
+      "We need the booking reference and the surname it is held in before we can look at this. We have not taken any action on any booking."
+    ]
+  },
+  "verified_facts": {
+    "gathered": false,
+    "reason": "identity was not confirmed"
+  },
+  "policy_evaluation": {
+    "evaluated": false,
+    "reason": "identity was not confirmed"
+  },
+  "decision": {
+    "status": "handed_over",
+    "rationale": [],
+    "what_the_passenger_gets": [],
+    "rejected_alternatives": [],
+    "referred_to_humans": [
+      {
+        "queue": "SUPERVISOR",
+        "blocking_clause": "S2.2, S12.1",
+        "requested_decision": "Establish who this contact is and which booking they mean, or close the contact.",
+        "internal_only": false
+      }
+    ]
+  },
+  "sources_consulted": [
+    {
+      "source_id": "SRC-booking-search-01",
+      "kind": "ops_api",
+      "endpoint": "/bookings/search?q=john.smith.personal@mailbox.example",
+      "retrieved_at": "2026-09-13T17:37:01Z",
+      "evidence": {
+        "query": "john.smith.personal@mailbox.example",
+        "match_count": 0,
+        "results": []
+      }
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "ACT-esc-01-supervisor",
+      "action_type": "escalation",
+      "state": "succeeded",
+      "booking_ref": null,
+      "passenger_ids": [],
+      "amount": null,
+      "itinerary": null,
+      "policy_basis": [
+        "S12.5",
+        "S2.2, S12.1"
+      ],
+      "preconditions_checked": {
+        "referral_completeness": "S12.5 requires what the passenger asked for, what the record shows, the recommended outcome, the blocking condition, and what the referring party must decide. All five are present.",
+        "benefit_scope_keys": [],
+        "refreshed_immediately_before_write": {
+          "refreshed": false,
+          "reason": "no mutable precondition"
+        }
+      },
+      "consent_basis": null,
+      "blocked_reason": null,
+      "fingerprint": "c35f8d5dff8a979f716bd0dba56ca77299d16435843373d72e9858835616f246",
+      "journal_key": "253",
+      "request_summary": {
+        "path": "/escalations",
+        "fields": {
+          "queue": "SUPERVISOR",
+          "blocking_clause": "S2.2, S12.1"
+        }
+      },
+      "response_status": 201,
+      "returned_ids": {
+        "escalation_id": "ESC-00005",
+        "raised_at": "2026-09-13T17:37:01Z",
+        "status": "OPEN",
+        "queue": "SUPERVISOR"
+      },
+      "verification": "Confirmed by readback: ESC-00005 appears in GET /_audit.",
+      "error": null
+    }
+  ],
+  "uncertainties": [
+    {
+      "issue": "Identity is not confirmed: Nothing the contact supplied matches any booking in the operational record: no usable reference, no matching contact email, no matching telephone. S2.2 applies.",
+      "effect_on_decision": "Every remedy is blocked (S16). The case is referred and the passenger is asked for identifying details."
+    }
+  ],
+  "human_handover": {
+    "required": true,
+    "reason": "S2.2, S12.1",
+    "escalation_ids": [
+      "ESC-00005"
+    ],
+    "api_handover_succeeded": true,
+    "next_steps": [
+      "Establish who this contact is and which booking they mean, or close the contact."
+    ]
+  },
+  "passenger_response": {
+    "language": "en",
+    "subject": "Booking details needed",
+    "body": "We have not been able to match your message to a booking, so we have not done anything on any booking. We need the booking reference and the surname it is held in.",
+    "status": "draft",
+    "note": "Draft only. The operations API exposes no send operation, so this text has not reached the passenger.",
+    "generated_by": "model"
+  },
+  "usage": {
+    "model": "gpt-5.6-luna",
+    "price_source": "https://developers.openai.com/api/docs/pricing",
+    "price_verified_on": "2026-09-13",
+    "prices_usd_per_mtok": {
+      "input": "0.20",
+      "cached_input": "0.02",
+      "output": "1.20"
+    },
+    "calls": [
+      {
+        "purpose": "extraction",
+        "model": "gpt-5.6-luna",
+        "request_id": null,
+        "input_tokens": null,
+        "cached_input_tokens": null,
+        "output_tokens": null,
+        "reasoning_tokens": null,
+        "calculated_cost_usd": null,
+        "reserved_upper_bound_usd": "0.002880",
+        "reservation_resolved": false,
+        "note": "call failed before usage could be established; reservation kept as an unresolved upper bound: Request timed out."
+      },
+      {
+        "purpose": "narration",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_069ef4c851a95be3016aa6df3f9f6c87d2ad3c509803b34307",
+        "input_tokens": 846,
+        "cached_input_tokens": 0,
+        "output_tokens": 58,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000239",
+        "reserved_upper_bound_usd": "0.001868",
+        "reservation_resolved": true,
+        "note": null
+      }
+    ],
+    "case_calculated_cost_usd": "0.000239",
+    "case_unresolved_reservation_upper_bound_usd": "0.002880",
+    "note": "Cost is derived from the usage the API reported, priced from the table above. Cached input and reasoning tokens are subsets of input and output tokens respectively and are each counted once. This is a calculated figure, not a billing statement from OpenAI."
+  },
+  "errors": [
+    {
+      "stage": "extraction",
+      "error": "Request timed out.",
+      "effect": "The contact was not read into structured form. Identity is attempted from the message and transport metadata alone, and the case is handed to a human."
+    }
+  ]
+}
