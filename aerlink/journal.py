@@ -61,6 +61,7 @@ CREATE TABLE IF NOT EXISTS model_usage (
     request_id        TEXT,
     input_tokens      INTEGER,
     cached_tokens     INTEGER,
+    cache_write_tokens INTEGER,
     output_tokens     INTEGER,
     reasoning_tokens  INTEGER,
     cost_usd          TEXT,
@@ -243,85 +244,92 @@ class Journal:
         self.path = Path(path)
         self.namespace = namespace
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        self._lock_path = self.path.with_suffix(".{}.lock".format(namespace))
+        self._lock_path = self.path.with_suffix(".lock")
         self._lock_handle = self._acquire_lock()
         self._conn = sqlite3.connect(str(self.path), isolation_level=None)
         self._conn.row_factory = sqlite3.Row
         self._conn.execute("PRAGMA journal_mode=WAL")
         self._conn.execute("PRAGMA synchronous=FULL")
         self._conn.executescript(SCHEMA)
+        if "cache_write_tokens" not in {r[1] for r in self._conn.execute("PRAGMA table_info(model_usage)")}:
+            self._conn.execute("ALTER TABLE model_usage ADD COLUMN cache_write_tokens INTEGER")
 
     def _acquire_lock(self):
-        """Exclusive-create a lock file. Stale locks from dead processes are cleared."""
+        """OS-held lock: released even on crashes, without signalling another PID.
+
+        The file stays on disk so two processes cannot lock different inodes.
+        All namespaces share it because they share budget and airline state.
+        """
         import os
 
-        for attempt in range(2):
-            try:
-                handle = os.open(
-                    str(self._lock_path), os.O_CREAT | os.O_EXCL | os.O_WRONLY
-                )
-                os.write(handle, str(os.getpid()).encode("ascii"))
-                return handle
-            except FileExistsError:
-                if attempt == 0 and self._lock_is_stale():
-                    continue
-                raise JournalLocked(
-                    "Another run is using the journal namespace {!r} ({}). Wait for it "
-                    "to finish, or use a different --journal-namespace. If you are "
-                    "certain no run is active, delete {}.".format(
-                        self.namespace, self._lock_path, self._lock_path
-                    )
-                )
-        raise JournalLocked("could not acquire {}".format(self._lock_path))
-
-    def _lock_is_stale(self) -> bool:
-        """True if the recorded pid is not running, so the lock can be reclaimed."""
-        import os
-
+        handle = os.open(str(self._lock_path), os.O_CREAT | os.O_RDWR, 0o600)
         try:
-            pid = int(self._lock_path.read_text(encoding="ascii").strip() or "0")
-        except (OSError, ValueError):
-            pid = 0
-        if pid == os.getpid():
-            # Held by us. A second Journal in the same process is a real conflict,
-            # not a stale file -- and on Windows the open handle cannot be unlinked.
-            return False
-        if pid > 0:
-            try:
-                os.kill(pid, 0)
-                return False                      # that process is alive
-            except ProcessLookupError:
-                pass                              # gone for certain; reclaim below
-            except (PermissionError, OSError):
-                # Windows does not report a missing pid as ProcessLookupError, so the
-                # signal test is inconclusive. The unlink below settles it instead: a
-                # live holder still has the file open and Windows will refuse.
-                pass
-        try:
-            self._lock_path.unlink()
-        except OSError:
-            return False                          # still held open by someone
-        return True
+            if os.name == "nt":
+                import msvcrt
+                if os.fstat(handle).st_size == 0:
+                    os.write(handle, b"0")
+                os.lseek(handle, 0, os.SEEK_SET)
+                msvcrt.locking(handle, msvcrt.LK_NBLCK, 1)
+            else:
+                import fcntl
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError as exc:
+            os.close(handle)
+            raise JournalLocked(
+                "Another run is using the journal ({}). Wait for it to finish. "
+                "Changing namespace does not bypass this lock.".format(self.path)
+            ) from exc
+        return handle
 
     def close(self) -> None:
         import os
 
         self._conn.close()
         if getattr(self, "_lock_handle", None) is not None:
+            handle, self._lock_handle = self._lock_handle, None
             try:
-                os.close(self._lock_handle)
+                if os.name == "nt":
+                    import msvcrt
+                    os.lseek(handle, 0, os.SEEK_SET)
+                    msvcrt.locking(handle, msvcrt.LK_UNLCK, 1)
+                else:
+                    import fcntl
+                    fcntl.flock(handle, fcntl.LOCK_UN)
             finally:
-                self._lock_handle = None
-                self._lock_path.unlink(missing_ok=True)
+                os.close(handle)
 
     # -- mutation intents --------------------------------------------------
+
+    def actions_for_booking(self, ops_base_url: str, booking_ref: str) -> list[dict[str, Any]]:
+        """Journal-wide provenance for server writes and unsettled booking actions.
+
+        A new namespace must not erase the evidence needed to avoid paying again.
+        Benefit keys carry the event scope absent from the operations API's writes.
+        """
+        rows = self._conn.execute(
+            "SELECT id, fingerprint, state, returned_id, action_type, created_at "
+            "FROM action_intents WHERE rtrim(ops_base_url, '/') = ? "
+            "AND upper(booking_ref) = ? AND state IN ('succeeded','unknown','attempted')",
+            (ops_base_url.rstrip('/'), booking_ref.upper()),
+        ).fetchall()
+        result = []
+        for row in rows:
+            item = dict(row)
+            item["benefit_keys"] = [
+                r["benefit_key"] for r in self._conn.execute(
+                    "SELECT benefit_key FROM benefit_grants WHERE journal_key = ?",
+                    (row["id"],),
+                ).fetchall()
+            ]
+            result.append(item)
+        return result
 
     def find_prior_actions(self, fingerprint: str) -> list[PriorAction]:
         rows = self._conn.execute(
             "SELECT id, state, case_id, run_id, returned_id, created_at, request_body, path "
-            "FROM action_intents WHERE namespace = ? AND fingerprint = ? "
+            "FROM action_intents WHERE fingerprint = ? "
             "AND state IN (?, ?, ?) ORDER BY id",
-            (self.namespace, fingerprint, *OPEN_STATES),
+            (fingerprint, *OPEN_STATES),
         ).fetchall()
         return [
             PriorAction(
@@ -421,8 +429,8 @@ class Journal:
     def last_reset_at(self, ops_base_url: str) -> str | None:
         row = self._conn.execute(
             "SELECT MAX(created_at) AS at FROM reset_markers "
-            "WHERE namespace = ? AND ops_base_url = ?",
-            (self.namespace, ops_base_url.rstrip("/")),
+            "WHERE ops_base_url = ?",
+            (ops_base_url.rstrip("/"),),
         ).fetchone()
         return row["at"] if row and row["at"] else None
 
@@ -435,13 +443,17 @@ class Journal:
         placeholders = ",".join("?" for _ in benefit_keys)
         rows = self._conn.execute(
             "SELECT benefit_key, booking_ref, action_type, journal_key, state, "
-            "created_at FROM benefit_grants WHERE namespace = ? AND state IN "
+            "created_at, ops_base_url FROM benefit_grants WHERE state IN "
             "('succeeded','unknown','attempted') AND benefit_key IN ({})".format(
                 placeholders
             ),
-            (self.namespace, *benefit_keys),
+            tuple(benefit_keys),
         ).fetchall()
-        return [dict(r) for r in rows]
+        return [dict(r) for r in rows if not (
+            self.last_reset_at(r["ops_base_url"]) and
+            (_parse_ts(r["created_at"]) or datetime.max.replace(tzinfo=timezone.utc)) <
+            _parse_ts(self.last_reset_at(r["ops_base_url"]))
+        )]
 
     def record_benefit_grants(
         self,
@@ -494,11 +506,12 @@ class Journal:
         cost_usd: Decimal | None,
         reserved_usd: Decimal,
         resolved: bool,
+        cache_write_tokens: int | None = None,
     ) -> int:
         cur = self._conn.execute(
             "INSERT INTO model_usage (namespace, run_id, case_id, purpose, model, "
             "request_id, input_tokens, cached_tokens, output_tokens, reasoning_tokens, "
-            "cost_usd, reserved_usd, resolved, created_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
+            "cost_usd, reserved_usd, resolved, created_at, cache_write_tokens) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)",
             (
                 self.namespace,
                 run_id,
@@ -514,36 +527,52 @@ class Journal:
                 str(reserved_usd),
                 1 if resolved else 0,
                 utcnow_iso(),
+                cache_write_tokens,
             ),
         )
         return int(cur.lastrowid)
 
-    def usage_totals(self, run_id: str | None = None) -> dict[str, Any]:
+    def settle_usage(self, usage_id: int, *, request_id: str | None,
+                     input_tokens: int | None, cached_tokens: int | None,
+                     output_tokens: int | None, reasoning_tokens: int | None,
+                     cost_usd: Decimal | None, resolved: bool, cache_write_tokens: int | None = None) -> None:
+        """Settle the pre-call reservation in place; never create a second call."""
+        self._conn.execute(
+            "UPDATE model_usage SET request_id=?, input_tokens=?, cached_tokens=?, "
+            "output_tokens=?, reasoning_tokens=?, cost_usd=?, resolved=?, cache_write_tokens=? "
+            "WHERE id=? AND namespace=?",
+            (request_id, input_tokens, cached_tokens, output_tokens, reasoning_tokens,
+             str(cost_usd) if cost_usd is not None else None, int(resolved), cache_write_tokens,
+             usage_id, self.namespace),
+        )
+
+    def usage_totals(self, run_id: str | None = None, *, all_namespaces: bool = False) -> dict[str, Any]:
         """Calculated spend, plus any reservations we could never resolve.
 
         Unresolved reservations are reported separately as an upper bound. They are
         never silently counted as zero.
         """
-        where = "WHERE namespace = ?"
-        args: list[Any] = [self.namespace]
+        where = "WHERE 1=1" if all_namespaces else "WHERE namespace = ?"
+        args: list[Any] = [] if all_namespaces else [self.namespace]
         if run_id:
             where += " AND run_id = ?"
             args.append(run_id)
         rows = self._conn.execute(
-            "SELECT input_tokens, cached_tokens, output_tokens, reasoning_tokens, "
+            "SELECT input_tokens, cached_tokens, cache_write_tokens, output_tokens, reasoning_tokens, "
             "cost_usd, reserved_usd, resolved FROM model_usage " + where,
             tuple(args),
         ).fetchall()
 
         total_cost = Decimal("0")
         unresolved = Decimal("0")
-        tokens = {"input": 0, "cached_input": 0, "output": 0, "reasoning": 0}
+        tokens = {"input": 0, "cached_input": 0, "cache_write": 0, "output": 0, "reasoning": 0}
         unresolved_calls = 0
         for r in rows:
             if r["resolved"]:
                 total_cost += Decimal(r["cost_usd"] or "0")
                 tokens["input"] += r["input_tokens"] or 0
                 tokens["cached_input"] += r["cached_tokens"] or 0
+                tokens["cache_write"] += r["cache_write_tokens"] or 0
                 tokens["output"] += r["output_tokens"] or 0
                 tokens["reasoning"] += r["reasoning_tokens"] or 0
             else:
@@ -564,7 +593,7 @@ class Journal:
 
     def committed_spend(self) -> Decimal:
         """Calculated spend plus unresolved reservations, for budget admission."""
-        totals = self.usage_totals()
+        totals = self.usage_totals(all_namespaces=True)
         return Decimal(totals["calculated_cost_usd"]) + Decimal(
             totals["unresolved_reservation_upper_bound_usd"]
         )

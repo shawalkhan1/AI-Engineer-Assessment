@@ -1,8 +1,6 @@
 # Action review — sweep `run-9b598dc772`
 
-Every mutation the superseded sweep executed, reviewed one at a time. That run is
-preserved unaltered in `artifacts/superseded-sweep-6-authority-defect/`; nothing here
-reinterprets its records, and nothing has been reversed.
+Every mutation the superseded sweep executed, reviewed one at a time. This is a historical review of an earlier unsafe implementation. Its redundant run directory was removed during submission cleanup; the original sessions preserve its development history. Nothing here claims those actions were reversed.
 
 **Verdicts: 1 supported, 8 unsupported, 0 unresolved.** The eight are unsupported on
 **authority**, not on entitlement. Every figure it paid was arithmetically correct.

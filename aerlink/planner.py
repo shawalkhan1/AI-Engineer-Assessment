@@ -38,6 +38,8 @@ from .timeutil import (
     parse_date,
     parse_local_deadline,
     parse_local_time,
+    station_local_now,
+    inventory_departure_utc,
 )
 
 # Queues the operations API documents for POST /escalations (API.md S18).
@@ -204,20 +206,17 @@ def match_passengers(
         if not tokens:
             continue
         needle = " ".join(tokens)
-        hit = None
-
+        candidates = []
         for pax in passengers:
             given = (pax.get("given_name") or "").casefold()
             surname = (pax.get("surname") or "").casefold()
             full = "{} {}".format(given, surname).strip()
             if needle in (full, given, surname):
-                hit = pax["passenger_id"]
-                break
-            if needle in full or full in needle:
-                hit = pax["passenger_id"]
-                break
+                candidates.append(pax["passenger_id"])
 
-        if hit is None and len(tokens) >= 2:
+        hit = candidates[0] if len(candidates) == 1 else None
+
+        if not candidates and len(tokens) >= 2:
             # "K. Braithwaite" / "Kenneth B" -- surname exact, given name by initial.
             surname_token = tokens[-1]
             lead = tokens[0]
@@ -227,7 +226,7 @@ def match_passengers(
                 surname = (pax.get("surname") or "").casefold()
                 if surname != surname_token:
                     continue
-                if given.startswith(lead) or (lead and given[:1] == lead[:1] and len(lead) == 1):
+                if given == lead or (lead and given[:1] == lead and len(lead) == 1):
                     candidates.append(pax["passenger_id"])
             if len(candidates) == 1:
                 hit = candidates[0]
@@ -397,7 +396,6 @@ class Planner:
             kind = request["request_type"]
             if kind in handled and kind in {
                 RequestType.COMPENSATION.value,
-                RequestType.HOTEL_ACCOMMODATION.value,
             }:
                 continue
             handled.add(kind)
@@ -422,6 +420,20 @@ class Planner:
                 }
             )
 
+        rebooks = [p for p in plan.proposals if p.action_type == ActionType.REBOOKING]
+        refunds = [p for p in plan.proposals if p.action_type == ActionType.REFUND]
+        conflicts = [p for p in rebooks + refunds if any(
+            set(p.passenger_ids) & set(other.passenger_ids)
+            for other in (refunds if p.action_type == ActionType.REBOOKING else rebooks))]
+        if conflicts:
+            for proposal in conflicts:
+                proposal.state = ActionState.BLOCKED
+                proposal.blocked_reason = "S7.3: refund and re-routing conflict for the same passengers; confirm their election."
+            plan.handovers.append(HandoverItem(queue=QUEUE_SUPERVISOR,
+                summary="The same passengers have conflicting refund and re-routing requests.",
+                requested_decision="Confirm each passenger's latest choice before making changes.",
+                recommendation="Neither conflicting remedy was executed.", blocking_clause="S7.3, S15.2"))
+
         # Compensation is an entitlement, not a favour: assess it whenever the record
         # shows a disruption, even where the passenger only asked for something else.
         if RequestType.COMPENSATION.value not in handled:
@@ -441,6 +453,17 @@ class Planner:
         request: dict[str, Any],
     ) -> None:
         kind = request["request_type"]
+        if kind in {RequestType.REBOOKING.value, RequestType.REFUND.value,
+                    RequestType.HOTEL_ACCOMMODATION.value} and not request.get("quote_verified"):
+            plan.needs_passenger_input.append(
+                "We could not verify your request to change the booking or issue a "
+                "benefit. Please confirm what you want us to arrange."
+            )
+            plan.add_uncertainty(
+                "The request has no verified quote in the inbound message.",
+                "No action was proposed for this request; confirmation is required.",
+            )
+            return
         if kind == RequestType.REBOOKING.value:
             self._plan_rebooking(plan, facts, extraction, request)
         elif kind == RequestType.REFUND.value:
@@ -530,6 +553,20 @@ class Planner:
             )
             return
 
+        flight = facts.flight or {}
+        delay = flight.get("departure_delay_minutes")
+        if flight.get("status") != "CANCELLED" and not (
+            flight.get("status") == "DELAYED" and delay is not None and delay > 300
+        ):
+            plan.handovers.append(HandoverItem(
+                queue=QUEUE_GENERAL,
+                summary="Re-routing requested; the operational record does not establish cancellation or an expected departure delay exceeding five hours.",
+                requested_decision="Verify eligibility and the current journey before offering a change.",
+                recommendation="No rebooking was made. Apply S6.1 using the verified flight status and expected departure delay.",
+                blocking_clause="S6.1",
+            ))
+            return
+
         if not request["quote_verified"]:
             plan.needs_passenger_input.append(
                 "We have not booked you onto another flight, because we want to be "
@@ -577,8 +614,8 @@ class Planner:
                     recommendation=(
                         "S14.4 forbids confirming a re-routing for a declared-"
                         "assistance passenger without moving the assistance with it. "
-                        "Own-carrier options on the date were checked and are listed "
-                        "in the case record."
+                        "A colleague must check current flight options and arrange "
+                        "the assistance before confirming the new journey."
                     ),
                     blocking_clause="S14.4",
                     passenger_note=(
@@ -612,6 +649,26 @@ class Planner:
 
         target_date = self._target_date(extraction, facts, segment)
         deadline = parse_local_deadline(extraction.preferences.arrive_by_local)
+        prefs = extraction.preferences
+        rebooking_requests = [r for r in plan.requested if r.get("live") and r.get("request_type") == RequestType.REBOOKING.value]
+        invalid_preferences = (
+            (prefs.arrive_by_local and deadline is None)
+            or (prefs.travel_date_iso and parse_date(prefs.travel_date_iso) is None)
+            or (prefs.depart_not_before_local and parse_local_time(prefs.depart_not_before_local) is None)
+        )
+        from .untrusted import verify_span
+        explicit_constraints = bool(prefs.arrive_by_local or prefs.travel_date_iso or
+                                    prefs.depart_not_before_local or prefs.alternative_origin_airports)
+        unverified_preferences = explicit_constraints and self._inbound_text and not verify_span(prefs.quote, self._inbound_text)
+        if invalid_preferences or unverified_preferences or (len(rebooking_requests) > 1 and explicit_constraints):
+            plan.handovers.append(HandoverItem(
+                queue=QUEUE_SUPERVISOR,
+                summary="Travel preferences cannot safely be assigned to this passenger group.",
+                requested_decision="Confirm each traveller's date, deadline and acceptable airports before booking.",
+                recommendation="No seat confirmed: the extracted preferences are invalid, unverified, or shared between distinct requests.",
+                blocking_clause="S6.4, S15.1",
+            ))
+            return
         cabin = segment.get("cabin") or "ECONOMY"
         destination = facts.booking.get("final_destination") or segment.get("destination")
 
@@ -657,7 +714,9 @@ class Planner:
                     "options_with_no_additional_fare": selection["free_option_count"],
                 }
             )
-            if selection["chosen"]:
+            if selection["chosen"] and (chosen is None or
+                    (arrival_datetime(selection["chosen"], target_date), gbp(selection["chosen"].get("fare_gbp")).amount_minor)
+                    < (arrival_datetime(chosen, target_date), gbp(chosen.get("fare_gbp")).amount_minor)):
                 chosen = selection["chosen"]
                 chosen_origin = origin
                 plan.rejected_alternatives.append(
@@ -669,7 +728,7 @@ class Planner:
                         "by the lower listed fare.",
                     }
                 )
-                break
+                # Check other explicitly accepted origins too; choose the earliest arrival.
 
         if chosen is None:
             self._plan_partner_fallback(
@@ -798,17 +857,33 @@ class Planner:
         """S8: partner metal, which is never actioned automatically (S8.2)."""
         tier = (facts.booking.get("tier") or "NONE").upper()
         grounds: list[str] = []
-        if all(
-            (s.get("passing_all_constraints") or 0) == 0 for s in searched
-        ):
+        complete = bool(searched) and all(
+            "passing_all_constraints" in item and not item.get("candidate_set_truncated")
+            for item in searched
+        )
+        if complete and all((item.get("passing_all_constraints") or 0) == 0 for item in searched):
             grounds.append("S8.1(d): no own-carrier option meets the requirement.")
         if tier in {"GOLD", "PLATINUM"}:
             grounds.append("S8.1(b): passenger holds {} tier.".format(tier))
+        partner_evidence = []
+        segment = facts.affected_segment or {}
+        if grounds:
+            partner = self.inventory.partner_availability(
+                segment.get("origin"), facts.booking.get("final_destination") or segment.get("destination"),
+                target_date.isoformat(), facts.booking_ref,
+            )
+            partner_evidence = [_option_summary(row) for row in partner.get("results", [])
+                                if row.get("cabin") == cabin and int(row.get("seats_available") or 0) >= len(passenger_ids)
+                                and (inventory_departure_utc(row, target_date) or facts.now) > facts.now][:3]
+            plan.rejected_alternatives.append({"context": "partner options for human review",
+                "searched": searched, "candidate_options_not_booked": partner_evidence,
+                "unavailable": bool(partner.get("unavailable")),
+                "note": "Supervisor must verify all passenger constraints before authorising."})
         plan.handovers.append(
             HandoverItem(
                 queue=QUEUE_SUPERVISOR,
                 summary=(
-                    "No own-carrier option on {} satisfies the passenger's stated "
+                    "No suitable own-carrier option was established on {} for the passenger's stated "
                     "requirement for booking {}. Own-carrier inventory was checked and "
                     "the results are in the case record (S8.3).".format(
                         target_date.isoformat(), facts.booking_ref
@@ -821,13 +896,14 @@ class Planner:
                 recommendation=(
                     "Grounds considered: "
                     + (" ".join(grounds) if grounds else "none established.")
-                    + " S8.2 requires supervisor authorisation and forbids actioning "
+                    + " Partner candidates for review: {}. ".format(partner_evidence)
+                    + "S8.2 requires supervisor authorisation and forbids actioning "
                     "any partner re-routing automatically, so none was attempted."
                 ),
                 blocking_clause="S8.2",
                 passenger_note=(
-                    "We have not booked you onto anything. Nothing on our own flights "
-                    "matched what you asked for on that date, so a colleague has to "
+                    "We have not booked you onto anything. We could not establish a suitable "
+                    "own-flight option on that date, so a colleague has to "
                     "decide what to offer you next."
                 ),
             )
@@ -864,6 +940,17 @@ class Planner:
             plan, facts, request
         )
         if passenger_ids is None:
+            return
+
+        if any(p.get("cabin_flown") for p in facts.booking.get("passengers", [])
+               if p.get("passenger_id") in passenger_ids):
+            plan.handovers.append(HandoverItem(
+                queue=QUEUE_SUPERVISOR,
+                summary="A refund was requested for passengers whose record indicates they have travelled.",
+                requested_decision="Establish which journey parts remain unused or became pointless under S7.1, and calculate any refund.",
+                recommendation="Do not refund the entire ticket automatically after travel. Check the recorded journey and the passenger's election.",
+                blocking_clause="S7.1",
+            ))
             return
 
         amount, basis, determinable = self._refund_amount(facts, passenger_ids)
@@ -910,7 +997,7 @@ class Planner:
             )
             return
 
-        authority = policy.authority_for_refund(amount)
+        authority = policy.authority_for_refund(amount, operating_level=self.config.authority_level)
         body = {
             "booking_ref": facts.booking_ref,
             "passenger_ids": passenger_ids,
@@ -1203,9 +1290,22 @@ class Planner:
             )
             return
 
+        passenger_ids, _unmatched = self._resolve_request_passengers(plan, facts, request)
+        if passenger_ids is None:
+            return
+
         segment = facts.affected_segment or {}
         station = segment.get("origin")
-        night = facts.now.date().isoformat()
+        local_now = station_local_now(station, facts.now)
+        if local_now is None:
+            plan.handovers.append(HandoverItem(
+                queue=QUEUE_GENERAL, summary="The station-local date for accommodation cannot be established.",
+                requested_decision="Confirm the passenger's location and required accommodation night.",
+                recommendation="No hotel voucher issued until the station and night are verified.",
+                blocking_clause="S4.2",
+            ))
+            return
+        night = local_now.date().isoformat()
 
         # Has this booking already been given a room for this night? Ask before
         # looking at the allocation, because our own earlier voucher is what consumed
@@ -1219,7 +1319,9 @@ class Planner:
             if station
             else None
         )
-        if existing is not None:
+        if existing is not None and set(passenger_ids).issubset(
+            set(existing.get("passenger_ids") or [])
+        ):
             plan.answers.append(
                 {
                     "request": request["detail"],
@@ -1235,6 +1337,16 @@ class Planner:
                     ),
                 }
             )
+            return
+
+        if existing is not None:
+            plan.handovers.append(HandoverItem(
+                queue=QUEUE_SUPERVISOR,
+                summary="An existing hotel voucher does not establish accommodation for every passenger in this request.",
+                requested_decision="Check room capacity and which passengers the existing voucher covers; arrange any remaining care.",
+                recommendation="Do not treat one passenger's voucher as satisfying another passenger's request or issue an overlapping voucher automatically.",
+                blocking_clause="S4.2, S15.1, S15.3",
+            ))
             return
 
         allocation = self.inventory.hotel_allocation(station, night) if station else None
@@ -1261,7 +1373,7 @@ class Planner:
                     recommendation="Care is owed under S4.1 regardless of cause (S4.3).",
                     blocking_clause="S4.5",
                     passenger_note=(
-                        "We hold no hotel allocation at that airport for that night, "
+                        "We could not confirm a hotel allocation at that airport for that night, "
                         "so we could not issue you a room directly. A colleague is "
                         "picking it up."
                     ),
@@ -1272,9 +1384,9 @@ class Planner:
         rate = gbp(allocation.get("rate_gbp"))
         rooms = allocation.get("rooms_remaining")
         authority = policy.authority_for_hotel(
-            rate=rate, rooms_remaining=rooms, nights_requested=1
+            rate=rate, rooms_remaining=rooms, nights_requested=1,
+            operating_level=self.config.authority_level,
         )
-        passenger_ids = [p["passenger_id"] for p in facts.booking.get("passengers", [])]
         body = {
             "booking_ref": facts.booking_ref,
             "station": station,
@@ -1688,7 +1800,7 @@ class Planner:
         passengers = facts.booking.get("passengers", [])
         if names:
             matched, unmatched = match_passengers(facts.booking, names)
-            if not matched:
+            if not matched or unmatched:
                 plan.add_uncertainty(
                     "None of the travellers named for this request ({}) match a "
                     "passenger on booking {}.".format(
@@ -1760,7 +1872,9 @@ class Planner:
         if explicit:
             return explicit
         deadline = parse_local_deadline(extraction.preferences.arrive_by_local)
-        disruption_date = parse_date(segment.get("date")) or facts.now.date()
+        local_now = station_local_now(segment.get("origin"), facts.now)
+        disruption_date = max(parse_date(segment.get("date")) or facts.now.date(),
+                              local_now.date() if local_now else facts.now.date())
         if deadline and deadline.date() >= disruption_date:
             # Prefer the disruption date itself when the deadline still allows it;
             # the passenger wants to travel as soon as they can.
@@ -1984,13 +2098,9 @@ def select_option(
     had left at 06:20 when they wrote at 09:31 -- while 40 and 42 usable later options
     sat in the same result set.
 
-    The comparison is sound without a timezone table. `departure_local` is a clock
-    time at the origin; every station in `stations.json` is UTC+1 to UTC+4 in August,
-    so local >= UTC. If the local clock time is already at or behind the UTC instant,
-    the real departure is further behind still, so the flight has certainly gone. The
-    converse does not hold, so an option shortly after `now` is surfaced rather than
-    filtered: we have no authoritative source for a minimum connection time and will
-    not invent one. That is recorded as a limitation.
+    Origin-local times are converted using the supplied station time zones and IANA
+    daylight-saving rules. Unknown or ambiguous zones/times are rejected, never
+    compared to a UTC clock as though both were local.
 
     The additional fare is deliberately **not** a filter. It is an authority question
     (S12.1), not a suitability one, and filtering on it here would hide from the
@@ -2034,12 +2144,13 @@ def select_option(
             rejections["departs_too_early"] += 1
             continue
         if now_utc is not None:
-            departure_local = parse_local_time(row.get("departure_local"))
-            row_date = parse_date(row.get("date")) or flight_date
-            if departure_local is not None and row_date is not None:
-                if departure_local.on(row_date) <= now_utc.replace(tzinfo=None):
-                    rejections["already_departed"] += 1
-                    continue
+            departure_utc = inventory_departure_utc(row, flight_date)
+            if departure_utc is None:
+                rejections["unparseable_times"] += 1
+                continue
+            if departure_utc <= now_utc:
+                rejections["already_departed"] += 1
+                continue
         if arrive_by is not None and arrives > arrive_by:
             rejections["arrives_after_deadline"] += 1
             continue

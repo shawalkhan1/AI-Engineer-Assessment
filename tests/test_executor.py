@@ -319,8 +319,8 @@ def test_a_crash_before_the_outcome_is_recorded_leaves_an_unsettled_row(
     report = make_executor(ops, journal, config).execute(
         [payment_proposal()], Inventory(ops)
     )
-    # The server holds a matching write, so this is recognised as already done.
-    assert report.actions[0].state == ActionState.SKIPPED_DUPLICATE
+    # The intent lacks a returned ID/event linkage; reconcile rather than guess.
+    assert report.actions[0].state == ActionState.BLOCKED
     assert len(server.writes["payments"]) == 1
 
 
@@ -419,6 +419,65 @@ def test_an_option_vanishing_from_inventory_blocks_the_booking(ops, journal, con
     assert report.actions[0].state == ActionState.BLOCKED
     assert "no longer in inventory" in report.actions[0].blocked_reason
     assert server.writes["rebookings"] == []
+
+
+@pytest.mark.parametrize("changed", [
+    {"fare_gbp": 5000.00},
+    {"flight_no": "ZZ999"},
+    {"date": "2026-08-08"},
+    {"destination": "MAD"},
+    {"operated_by": "Other Airline"},
+    {"arrival_local": "23:00"},
+])
+def test_changed_rebooking_terms_require_a_new_decision(
+    ops, journal, config, server, changed
+):
+    proposal = rebooking_proposal()
+    proposal.itinerary = dict(availability_rows("LGW", "FCO", "2026-08-07")[0])
+    changed_row = dict(proposal.itinerary, **changed)
+    report = make_executor(ops, journal, config).execute(
+        [proposal], Inventory(ops, rows=[changed_row])
+    )
+    assert report.actions[0].state == ActionState.BLOCKED
+    assert "changed since planning" in report.actions[0].blocked_reason
+    assert server.writes["rebookings"] == []
+
+
+def test_hotel_rate_increasing_past_authority_is_rejected(
+    ops, journal, config, server
+):
+    report = make_executor(ops, journal, config).execute(
+        [hotel_proposal()],
+        Inventory(ops, hotel={"rooms_remaining": 1, "rate_gbp": 999.00}),
+    )
+    assert report.actions[0].state == ActionState.BLOCKED
+    assert "hotel rate changed" in report.actions[0].blocked_reason
+    assert server.writes["hotel_vouchers"] == []
+
+
+@pytest.mark.parametrize("malformed", [None, {}, {"writes": {}}])
+def test_fresh_journal_does_not_allow_money_when_audit_is_unavailable(
+    ops, journal, config, server, malformed
+):
+    def broken_audit():
+        if malformed is None:
+            raise RuntimeError("audit unavailable")
+        return malformed
+
+    ops.audit = broken_audit
+    handover = escalation_proposal(
+        action_id="ACT-escalation", booking_ref="TST-000001", queue="SUPERVISOR",
+        summary="Audit unavailable", requested_decision="Reconcile existing payments",
+        recommendation="Do not repeat a payment", blocking_clause="unreadable audit",
+        disruption_scope="ZZ100:2026-08-01", key="audit-failure",
+    )
+    report = make_executor(ops, journal, config).execute(
+        [payment_proposal(), handover], Inventory(ops)
+    )
+    assert report.actions[0].state == ActionState.BLOCKED
+    assert "could not be read" in report.actions[0].blocked_reason
+    assert server.writes["payments"] == []
+    assert len(server.writes["escalations"]) == 1
 
 
 def test_an_allocation_exhausted_between_planning_and_execution_blocks_the_voucher(
@@ -805,9 +864,9 @@ def test_a_second_run_cannot_share_a_journal_namespace(config, tmp_path):
     try:
         with pytest.raises(JournalLocked, match="Another run is using"):
             Journal(path, namespace="ns")
-        # A different namespace is independent and may proceed.
-        other = Journal(path, namespace="other-ns")
-        other.close()
+        # Namespace labels cannot bypass serialization of the same money ledger.
+        with pytest.raises(JournalLocked, match="Another run is using"):
+            Journal(path, namespace="other-ns")
     finally:
         first.close()
     # Released on close, so the next run starts cleanly.
@@ -815,12 +874,14 @@ def test_a_second_run_cannot_share_a_journal_namespace(config, tmp_path):
     again.close()
 
 
-def test_a_lock_left_by_a_dead_process_is_reclaimed(config, tmp_path):
+def test_an_unlocked_persistent_lock_file_can_be_reacquired(config, tmp_path):
     from aerlink.journal import Journal
 
     path = tmp_path / "j.sqlite3"
-    stale = path.with_suffix(".ns.lock")
-    stale.write_text("999999", encoding="ascii")     # a pid that is not running
+    stale = path.with_suffix(".lock")
+    stale.write_text("0", encoding="ascii")
     journal = Journal(path, namespace="ns")
     journal.close()
-    assert not stale.exists()
+    assert stale.exists(), "keep the inode stable; the operating system owns the lock"
+    again = Journal(path, namespace="other")
+    again.close()

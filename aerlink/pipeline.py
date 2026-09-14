@@ -27,6 +27,7 @@ from .identity import resolve_identity
 from .journal import Journal
 from .llm import BudgetExhausted, LLMClient, ModelCallLimitReached, ModelOutputInvalid
 from .narrate import fallback_reply, run_narration
+from .report import validate_case_id
 from .ops_client import OpsClient, OpsError, OpsTransportError, AttemptBudgetExhausted
 from .planner import (
     CaseFacts,
@@ -109,8 +110,19 @@ def load_case(
                     meta, type(meta_data).__name__
                 )
             )
+        for name in ("from", "received_at", "case_id"):
+            if name in meta_data and not isinstance(meta_data[name], str):
+                raise CaseInputError(
+                    "Metadata field {!r} must be a string, got {}.".format(
+                        name, type(meta_data[name]).__name__
+                    )
+                )
 
     resolved_id = case_id or (meta_data or {}).get("case_id") or inbound.parent.name
+    try:
+        resolved_id = validate_case_id(str(resolved_id))
+    except ValueError as exc:
+        raise CaseInputError(str(exc)) from exc
     return CaseInput(
         case_id=str(resolved_id),
         inbound_path=inbound,
@@ -237,7 +249,9 @@ def run_case(
     facts: CaseFacts | None = None
     identity = None
     reply: Any = None
-    reply_is_draft = True
+    reply_was_model = False
+    executor: Executor | None = None
+    recovery_needed = False
 
     injection_indicators = detect_injection_indicators(case.text)
     urls = extract_urls(case.text)
@@ -408,7 +422,12 @@ def run_case(
 
         handovers.extend(
             _handovers_from_execution(
-                report, booking_ref=identity.booking_ref if identity else None
+                report,
+                booking_ref=identity.booking_ref if identity else None,
+                preblocked_action_ids={
+                    p.action_id for p in (plan.proposals if plan else [])
+                    if p.state == ActionState.BLOCKED
+                },
             )
         )
         for unknown in report.unknown_outcomes:
@@ -461,6 +480,7 @@ def run_case(
             try:
                 result = run_narration(llm, brief)
                 reply = result.parsed
+                reply_was_model = True
                 model_usage.append(result.usage)
             except (BudgetExhausted, ModelCallLimitReached, ModelOutputInvalid) as exc:
                 errors.append(
@@ -476,11 +496,12 @@ def run_case(
             reply = fallback_reply(brief)
 
     except UnknownCaseTime as exc:
+        recovery_needed = True
         errors.append(
             {
                 "stage": "ingest",
                 "error": str(exc)[:300],
-                "effect": "The case cannot be worked without a reliable date. Handed over.",
+                "effect": "The case cannot be worked without a reliable date. A handover is required.",
             }
         )
         handovers.append(
@@ -496,14 +517,69 @@ def run_case(
         )
         status = CaseStatus.FAILED
     except Exception as exc:  # noqa: BLE001 - a case must always leave a record
+        recovery_needed = True
         errors.append(
             {
                 "stage": "case",
                 "error": "{}: {}".format(type(exc).__name__, str(exc)[:300]),
-                "effect": "The case did not complete. Nothing further was attempted.",
+                "effect": "Case processing stopped. Completed writes are preserved and a handover is attempted.",
             }
         )
+        handovers.append(
+            HandoverItem(
+                queue="SUPERVISOR",
+                summary="Processing case {} stopped unexpectedly: {}.".format(
+                    case.case_id, type(exc).__name__
+                ),
+                requested_decision=(
+                    "Review this case record and the operations audit, reconcile any "
+                    "uncertain writes, then complete the outstanding requests."
+                ),
+                recommendation="Preserve completed actions; do not repeat any uncertain write.",
+                blocking_clause="case processing error",
+            )
+        )
         status = CaseStatus.FAILED
+
+    if recovery_needed:
+        # execute() can fail after an earlier action has committed. Keep the
+        # executor's durable per-action history even if that pass never returned.
+        if executor is None:
+            executor = Executor(
+                ops, journal, config, case_id=case.case_id, run_id=run_id, dry_run=dry_run
+            )
+        actions = list(executor.report.actions)
+        try:
+            executor.execute(
+                _build_escalations(
+                    handovers,
+                    booking_ref=identity.booking_ref if identity else None,
+                    disruption_scope=facts.disruption_scope if facts else "unidentified",
+                    ops_base_url=config.ops_base_url,
+                    contact_key=case.sha256[:16],
+                ),
+                InventoryAdapter(ops),
+            )
+        except Exception as exc:  # even an unavailable handover must leave a record
+            errors.append({
+                "stage": "recovery_handover",
+                "error": "{}: {}".format(type(exc).__name__, str(exc)[:300]),
+                "effect": "The handover could not be completed. A human must pick up this local case record.",
+            })
+        actions = list(executor.report.actions)
+        for error in executor.report.errors:
+            if error not in errors:
+                errors.append(error)
+        if any(
+            a.action_type == ActionType.ESCALATION
+            and a.state in {ActionState.SUCCEEDED, ActionState.SKIPPED_DUPLICATE, ActionState.WOULD_EXECUTE}
+            for a in actions
+        ):
+            status = (
+                CaseStatus.PARTIALLY_RESOLVED
+                if any(a.action_type != ActionType.ESCALATION and a.state == ActionState.SUCCEEDED for a in actions)
+                else CaseStatus.HANDED_OVER
+            )
 
     if reply is None:
         reply = fallback_reply(
@@ -583,9 +659,7 @@ def run_case(
                 "text has not reached the passenger."
             ),
             "generated_by": (
-                "model" if llm is not None and not any(
-                    e.get("stage") == "narration" for e in errors
-                ) else "deterministic template"
+                "model" if reply_was_model else "deterministic template"
             ),
         },
         usage=_usage_record(model_usage, config, journal, run_id, case.case_id),
@@ -792,7 +866,10 @@ def _add_cause_dispute_referral(
 # ---------------------------------------------------------------------------
 
 
-def _handovers_from_execution(report, *, booking_ref: str | None) -> list[HandoverItem]:
+def _handovers_from_execution(
+    report, *, booking_ref: str | None,
+    preblocked_action_ids: set[str] | None = None,
+) -> list[HandoverItem]:
     """Referrals that only become necessary once the writes have been attempted.
 
     The unknown outcome is the important one. It is not a failure we can shrug off,
@@ -800,6 +877,39 @@ def _handovers_from_execution(report, *, booking_ref: str | None) -> list[Handov
     person together with the exact request that was sent.
     """
     items: list[HandoverItem] = []
+    blocked = [
+        a for a in report.actions
+        if a.state == ActionState.BLOCKED
+        and a.action_type != ActionType.ESCALATION
+        and a.action_id not in (preblocked_action_ids or set())
+    ]
+    if blocked:
+        items.append(
+            HandoverItem(
+                queue="SUPERVISOR",
+                summary=(
+                    "A proposed remedy on booking {} was stopped at execution: {}".format(
+                        booking_ref or "an unidentified booking",
+                        "; ".join(
+                            "{} ({}): {}".format(a.action_id, a.action_type.value, a.blocked_reason)
+                            for a in blocked
+                        ),
+                    )
+                ),
+                requested_decision=(
+                    "Reconcile any prior or uncertain writes, recheck live availability "
+                    "and authority, then complete the outstanding remedy or agree an alternative."
+                ),
+                recommendation=(
+                    "These blocked actions were not sent. Preserve any separately "
+                    "confirmed actions and inspect each blocking reason before acting."
+                ),
+                blocking_clause="execution safety gate: precondition or duplicate check blocked the write",
+                passenger_note=(
+                    "One part of your request needs a colleague to check before it can be completed."
+                ),
+            )
+        )
     unknown = [a for a in report.actions if a.state == ActionState.UNKNOWN]
     if unknown:
         detail = "; ".join(
@@ -880,6 +990,12 @@ def _build_escalations(
     for item in handovers:
         grouped.setdefault(item.queue, []).append(item)
 
+    # Never drop queue four and beyond: route overflow to a coordinating supervisor.
+    if len(grouped) > MAX_ESCALATIONS_PER_CASE:
+        ordered = sorted(grouped, key=lambda q: (q not in {"YTP", "SPECIAL_ASSISTANCE"}, q))
+        keep = [q for q in ordered if q != "SUPERVISOR"][:MAX_ESCALATIONS_PER_CASE - 1]
+        overflow = [item for q, items in grouped.items() if q not in keep for item in items]
+        grouped = {**{q: grouped[q] for q in keep}, "SUPERVISOR": overflow}
     proposals = []
     for index, (queue, items) in enumerate(sorted(grouped.items())):
         if index >= MAX_ESCALATIONS_PER_CASE:
@@ -889,9 +1005,9 @@ def _build_escalations(
                 action_id="ACT-esc-{:02d}-{}".format(index + 1, queue.lower()),
                 booking_ref=booking_ref,
                 queue=queue,
-                summary=" || ".join(i.summary for i in items)[:3900],
-                requested_decision=" || ".join(i.requested_decision for i in items)[:2000],
-                recommendation=" || ".join(i.recommendation for i in items)[:3000],
+                summary=" || ".join("[{}] {}".format(i.queue, i.summary) for i in items),
+                requested_decision=" || ".join(i.requested_decision for i in items),
+                recommendation=" || ".join(i.recommendation for i in items),
                 blocking_clause="; ".join(
                     sorted({i.blocking_clause for i in items})
                 )[:300],
@@ -1180,6 +1296,7 @@ def _usage_record(
         "prices_usd_per_mtok": {
             "input": str(config.price.input_usd_per_mtok),
             "cached_input": str(config.price.cached_input_usd_per_mtok),
+            "cache_write": str(config.price.cache_write_rate),
             "output": str(config.price.output_usd_per_mtok),
         },
         "calls": model_usage,

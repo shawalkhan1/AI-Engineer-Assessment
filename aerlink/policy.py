@@ -349,7 +349,8 @@ def cross_check_entitlement(
     comp = entitlement.get("compensation") or {}
     arrival_delay = journey.get("arrival_delay_minutes_at_final_destination")
     rerouted = journey.get("rerouted_onto")
-    if expected_extraordinary:
+    informed_days = (booking.get("disruption") or {}).get("informed_days_before")
+    if expected_extraordinary or (informed_days is not None and informed_days >= 14):
         expected_status = "NOT_PAYABLE"
         expected_pence = 0
     elif arrival_delay is None:
@@ -626,6 +627,13 @@ def authority_for_hotel(
     nights_requested: int,
     operating_level: str = REPRESENTATIVE,
 ) -> Authority:
+    if rooms_remaining is None or rate.amount_minor <= 0 or nights_requested < 1:
+        return Authority(
+            allowed=False,
+            required_level=SUPERVISOR,
+            clause="S4.2, S4.5",
+            reason="The allocation, positive room rate, or requested stay length is not established.",
+        )
     if rooms_remaining is not None and rooms_remaining <= 0:
         return Authority(
             allowed=False,

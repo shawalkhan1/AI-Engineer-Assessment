@@ -1,0 +1,921 @@
+{
+  "schema_version": 1,
+  "case_id": "unseen-audit",
+  "run_id": "run-d9fa66ecba",
+  "started_at": "2026-09-14T18:00:40Z",
+  "finished_at": "2026-09-14T18:00:55Z",
+  "dry_run": false,
+  "status": "handed_over",
+  "input_provenance": {
+    "inbound_path": "examples\\unseen-case\\inbound.txt",
+    "inbound_sha256": "d711ca266cba9dd37832ac100583d80fd8b54e393cb04bdfc1718a8e5653bec4",
+    "inbound_bytes": 601,
+    "metadata_path": "examples\\unseen-case\\meta.json",
+    "metadata_origin": "supplied meta.json, treated as trusted transport metadata",
+    "metadata_fields": [
+      "case_id",
+      "channel",
+      "from",
+      "received_at",
+      "subject"
+    ],
+    "trust_model": "meta.from is transport metadata from the mail system. Everything inside inbound.txt, including any header it quotes, is passenger-supplied and untrusted (S12.4).",
+    "urls_in_message_not_followed": [],
+    "injection_indicators": [],
+    "case_now": "2026-08-08T11:40:11+00:00",
+    "case_now_source": "meta.received_at"
+  },
+  "identity_resolution": {
+    "confirmed": true,
+    "confirmation_standard": "S2.1(a) reference plus matching surname",
+    "verified_booking_ref": "AER-5Z8Q3F",
+    "customer_id": "CUS-10020",
+    "sender_email": "oliver.ashworth@mailbox.example",
+    "sender_display_name": "Oliver Ashworth",
+    "reason": "Reference AER-5Z8Q3F exists and carries passenger surname 'ashworth', which the contact supplied.",
+    "candidates_considered": [
+      {
+        "booking_ref": "AER-5Z8Q3F",
+        "source": "reference supplied by the contact",
+        "outcome": "exists; surname matched",
+        "matched_surname": "ashworth"
+      }
+    ],
+    "unresolved_checks": [],
+    "evidence_source_ids": [
+      "SRC-booking-01"
+    ],
+    "third_party_contact_blocked": false,
+    "rule": "APCP-2026-04 S2.1 permits confirmation only by (a) reference plus matching surname, (b) an exact contact email on exactly one booking, or (c) a normalised telephone match on exactly one booking. S2.2: a partial or probable match is not a match."
+  },
+  "passenger_requests": {
+    "read": true,
+    "language": "en",
+    "requests": [
+      {
+        "index": 0,
+        "request_type": "rebooking",
+        "detail": "The passenger asks to be booked on the earliest available service that gets him to Lisbon by tomorrow afternoon at the latest, without caring which service it is.",
+        "quote": "Please put me on the earliest thing you have that gets me there in time - I don't mind what it is.",
+        "quote_verified": true,
+        "for_passenger_names": [
+          "Oliver Ashworth"
+        ],
+        "stated_at": "2026-08-08T12:40:11+01:00",
+        "passenger_has_authorised_booking": true,
+        "live": true,
+        "not_live_because": []
+      },
+      {
+        "index": 1,
+        "request_type": "information_only",
+        "detail": "The passenger asks whether he is owed anything for the cancellation.",
+        "quote": "Also, am I owed anything for this?",
+        "quote_verified": true,
+        "for_passenger_names": [
+          "Oliver Ashworth"
+        ],
+        "stated_at": "2026-08-08T12:40:11+01:00",
+        "passenger_has_authorised_booking": false,
+        "live": true,
+        "not_live_because": []
+      }
+    ],
+    "preferences_and_consent": {
+      "explicitly_asked_for_earliest_available": true,
+      "arrive_by_local": "2026-08-09T15:00",
+      "travel_date_iso": null,
+      "depart_not_before_local": null,
+      "alternative_origin_airports": [],
+      "supporting_quote": "I need to be in Lisbon by tomorrow afternoon at the absolute latest."
+    },
+    "passenger_claims_to_investigate": [
+      {
+        "topic": "cancellation",
+        "claim": "The passenger says he was told that flight AK588 from Heathrow to Lisbon on 8 August 2026 was cancelled.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "I have just been told AK588 from Heathrow to Lisbon today is cancelled."
+      },
+      {
+        "topic": "cause_of_disruption",
+        "claim": "The passenger says the cancellation was attributed to a crew problem on the board.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "The board says it is a crew problem."
+      }
+    ],
+    "embedded_instructions_refused": [],
+    "unclear_points": [],
+    "span_verification": {
+      "spans_verified": 7,
+      "spans_unverified": 0,
+      "unverified": [],
+      "verified_booking_refs": [
+        "AER-5Z8Q3F"
+      ],
+      "verified_request_indexes": [
+        0,
+        1
+      ],
+      "note": "A quote that cannot be found in the message is not evidence. Claims listed under 'unverified' are recorded but are not relied on."
+    },
+    "we_asked_the_passenger_for": [],
+    "what_became_of_each_request": [
+      {
+        "request_type": "rebooking",
+        "detail": "The passenger asks to be booked on the earliest available service that gets him to Lisbon by tomorrow afternoon at the latest, without caring which service it is.",
+        "addressed_by": [
+          "referred to a human"
+        ],
+        "addressed": true
+      },
+      {
+        "request_type": "information_only",
+        "detail": "The passenger asks whether he is owed anything for the cancellation.",
+        "addressed_by": [
+          "answered in the reply"
+        ],
+        "addressed": true
+      }
+    ],
+    "unaddressed_requests": []
+  },
+  "verified_facts": {
+    "gathered": true,
+    "case_now": "2026-08-08T11:40:11+00:00",
+    "case_now_source": "meta.received_at",
+    "booking": {
+      "booking_ref": "AER-5Z8Q3F",
+      "tier": "NONE",
+      "final_destination": "LIS",
+      "total_paid_gbp": 198.0,
+      "fare_breakdown": null,
+      "special_requests": "",
+      "passengers": [
+        {
+          "passenger_id": "P1",
+          "name": "Oliver Ashworth",
+          "passenger_type": "ADULT",
+          "assistance": null,
+          "cabin_booked": "ECONOMY",
+          "cabin_flown": null
+        }
+      ],
+      "segments": [
+        {
+          "segment_id": "S1",
+          "flight_no": "AK588",
+          "date": "2026-08-08",
+          "origin": "LHR",
+          "destination": "LIS",
+          "segment_fare_gbp": 151.0,
+          "cabin": "ECONOMY",
+          "is_affected": true
+        }
+      ],
+      "disruption": {
+        "affected_segment": "S1",
+        "rerouted_onto": null,
+        "arrival_delay_minutes": null,
+        "informed_days_before": 0
+      }
+    },
+    "flight_operational_record": {
+      "flight_no": "AK588",
+      "date": "2026-08-08",
+      "origin": "LHR",
+      "destination": "LIS",
+      "distance_km": 1585,
+      "scheduled_departure": "2026-08-08T11:30:00Z",
+      "scheduled_arrival": "2026-08-08T14:05:00Z",
+      "status": "CANCELLED",
+      "cause_code": "CREW",
+      "cause_note": "Captain reported unfit to fly; no standby captain available at LHR. Aerlink LIS service suspended for remainder of date; next own-metal service 2026-08-10.",
+      "departure_delay_minutes": null,
+      "aircraft": "A320",
+      "operated_by": "Aerlink"
+    },
+    "entitlement_service": {
+      "status": "ASSESSED",
+      "authoritative": true,
+      "policy_version": "APCP-2026-04 v11.3",
+      "journey": {
+        "origin": "LHR",
+        "final_destination": "LIS",
+        "great_circle_distance_km": 1585,
+        "band": "B",
+        "affected_flight": "AK588:2026-08-08",
+        "cause_code": "CREW",
+        "cause_is_extraordinary": false,
+        "flight_status": "CANCELLED",
+        "departure_delay_minutes": null,
+        "arrival_delay_minutes_at_final_destination": null,
+        "rerouted_onto": null
+      },
+      "compensation": {
+        "amount_gbp": 0.0,
+        "status": "INSUFFICIENT_DATA",
+        "reasoning": [
+          "S1.3: great-circle distance 1585 km, therefore Band B.",
+          "S3: operational record shows cause_code=CREW, which is within Aerlink's control (S3.3).",
+          "S5.2: arrival delay at final destination is not yet known, because the passenger has not been re-routed. Compensation cannot be assessed until the passenger's re-routing (or refusal) is settled. S10.3 applies."
+        ]
+      },
+      "duty_of_care": {
+        "triggered": true,
+        "basis": "S4.1: flight cancelled, care owed immediately.",
+        "note": "S4 care is owed regardless of cause, including extraordinary circumstances (S4.3).",
+        "entitlements": [
+          {
+            "type": "meals_refreshments",
+            "cap_gbp": 30.0,
+            "per": "passenger per 6 hours"
+          },
+          {
+            "type": "communication",
+            "cap": "two calls or equivalent"
+          },
+          {
+            "type": "hotel",
+            "cap_gbp": 180.0,
+            "per": "room per night",
+            "max_nights": 3,
+            "note": "Subject to station allocation, S4.5."
+          },
+          {
+            "type": "transport",
+            "cap_gbp": 45.0,
+            "per": "journey"
+          }
+        ]
+      },
+      "passengers": [
+        {
+          "passenger_id": "P1",
+          "name": "Oliver Ashworth",
+          "passenger_type": "ADULT",
+          "compensation_gbp": 0.0,
+          "compensation_status": "INSUFFICIENT_DATA",
+          "downgrade_reimbursement_gbp": 0.0,
+          "downgrade_reasoning": [],
+          "flags": [],
+          "total_payable_gbp": 0.0
+        }
+      ],
+      "total_payable_gbp": 0.0
+    },
+    "customer_history": {
+      "customer_id": "CUS-10020",
+      "tier": "NONE",
+      "flags": [],
+      "previous_cases": []
+    },
+    "network_feed_corroboration": {
+      "flight_events": [
+        {
+          "event_id": "EVT-40080",
+          "timestamp": "2026-08-08T10:15:00Z",
+          "flight_no": "AK588",
+          "date": "2026-08-08",
+          "route": "LHR-LIS",
+          "event": "CANCELLED",
+          "cause_code": "CREW",
+          "detail": "Captain reported unfit to fly. No standby captain at LHR. LHR-LIS suspended for remainder of date; next own-metal service AK588 2026-08-10. See ADV-2026-0808-A."
+        }
+      ],
+      "advisories": [
+        {
+          "advisory_id": "ADV-2026-0801-A",
+          "issued": "2026-08-01T05:00:00Z",
+          "severity": "MODERATE",
+          "stations": [
+            "LIS"
+          ],
+          "headline": "Reduced arrival rate at LIS due to runway resurfacing programme, 04:00-09:00 local daily until 2026-08-14. Expect 15-30 minute holding on morning arrivals.",
+          "affects_compensation": false
+        },
+        {
+          "advisory_id": "ADV-2026-0805-A",
+          "issued": "2026-08-05T04:00:00Z",
+          "severity": "MODERATE",
+          "stations": [
+            "LHR"
+          ],
+          "headline": "Crew availability pressure at LHR following 2026-08-04 disruption. Standby pool exhausted on short-haul European rosters. Operations advise elevated risk of same-day cancellation.",
+          "affects_compensation": true
+        },
+        {
+          "advisory_id": "ADV-2026-0808-A",
+          "issued": "2026-08-08T05:45:00Z",
+          "severity": "MODERATE",
+          "stations": [
+            "LHR",
+            "LIS"
+          ],
+          "headline": "LHR-LIS rotation suspended for 2026-08-08 following crew unavailability. Next own-metal service 2026-08-10. Partner re-accommodation authorised for affected passengers subject to Section 8 of APCP-2026-04.",
+          "affects_compensation": true
+        }
+      ]
+    }
+  },
+  "policy_evaluation": {
+    "evaluated": true,
+    "policy_document": "APCP-2026-04 v11.3",
+    "authoritative_source": "GET /entitlements/calculate. S10.2 makes its figure the amount owed; S10.4 forbids substituting a locally derived one.",
+    "eligible_remedies": [
+      {
+        "remedy": "statutory_compensation",
+        "status": "INSUFFICIENT_DATA",
+        "amount_gbp": 0.0,
+        "clause": "S5",
+        "source": "entitlement calculation service (authoritative, S10.2)",
+        "reasoning": [
+          "S1.3: great-circle distance 1585 km, therefore Band B.",
+          "S3: operational record shows cause_code=CREW, which is within Aerlink's control (S3.3).",
+          "S5.2: arrival delay at final destination is not yet known, because the passenger has not been re-routed. Compensation cannot be assessed until the passenger's re-routing (or refusal) is settled. S10.3 applies."
+        ]
+      },
+      {
+        "remedy": "duty_of_care",
+        "status": "TRIGGERED",
+        "clause": "S4",
+        "basis": "S4.1: flight cancelled, care owed immediately.",
+        "entitlements": [
+          {
+            "type": "meals_refreshments",
+            "cap_gbp": 30.0,
+            "per": "passenger per 6 hours"
+          },
+          {
+            "type": "communication",
+            "cap": "two calls or equivalent"
+          },
+          {
+            "type": "hotel",
+            "cap_gbp": 180.0,
+            "per": "room per night",
+            "max_nights": 3,
+            "note": "Subject to station allocation, S4.5."
+          },
+          {
+            "type": "transport",
+            "cap_gbp": 45.0,
+            "per": "journey"
+          }
+        ],
+        "note": "S4 care is owed regardless of cause, including extraordinary circumstances (S4.3)."
+      }
+    ],
+    "already_provided": [],
+    "independent_cross_check": {
+      "agrees_with_authoritative_service": true,
+      "checks": [
+        {
+          "check": "S1.3 band",
+          "independently_derived": "B",
+          "service_returned": "B",
+          "basis": "distance 1585 km",
+          "agrees": true
+        },
+        {
+          "check": "S3.2 cause is extraordinary",
+          "independently_derived": false,
+          "service_returned": false,
+          "basis": "cause_code CREW",
+          "agrees": true
+        },
+        {
+          "check": "S5 compensation status",
+          "independently_derived": "INSUFFICIENT_DATA",
+          "service_returned": "INSUFFICIENT_DATA",
+          "basis": "arrival delay None min, re-routed onto None",
+          "agrees": true
+        },
+        {
+          "check": "S5.3/S5.4 compensation amount (pence)",
+          "independently_derived": 0,
+          "service_returned": 0,
+          "basis": "band B",
+          "agrees": true
+        },
+        {
+          "check": "S9.4 downgrade reimbursement for P1 (pence)",
+          "independently_derived": 0,
+          "service_returned": 0,
+          "basis": "segment S1 fare 15100 pence, NOT the booking total of 19800 pence",
+          "agrees": true
+        }
+      ],
+      "disagreements": [],
+      "rule": "S10.2 makes the entitlement service's figure the amount owed. This check never replaces that figure. Under S10.4, a disagreement is referred with both numbers stated, not resolved locally."
+    },
+    "rule_references": [],
+    "answers_given_without_action": [
+      {
+        "request": "The passenger asks whether he is owed anything for the cancellation.",
+        "answer_basis": "Answered from the operational record in the reply."
+      }
+    ]
+  },
+  "decision": {
+    "status": "handed_over",
+    "rationale": [
+      "S3.1: the operational record is authoritative on cause. AK588 on 2026-08-08 is recorded as CANCELLED with cause CREW (Captain reported unfit to fly; no standby captain available at LHR. Aerlink LIS service suspended for remainder of date; next own-metal service 2026-08-10.)."
+    ],
+    "what_the_passenger_gets": [],
+    "rejected_alternatives": [
+      {
+        "context": "partner options for human review",
+        "searched": [
+          {
+            "route": "LHR-LIS",
+            "date": "2026-08-08",
+            "total_options": 0,
+            "candidate_set_truncated": false,
+            "passing_all_constraints": 0,
+            "rejection_counts": {
+              "not_own_carrier": 0,
+              "wrong_cabin": 0,
+              "not_enough_seats": 0,
+              "arrives_after_deadline": 0,
+              "departs_too_early": 0,
+              "already_departed": 0,
+              "unparseable_times": 0
+            },
+            "options_with_no_additional_fare": 0
+          }
+        ],
+        "candidate_options_not_booked": [
+          {
+            "option_id": "OPT-0970CD892D",
+            "flight_no": "EI564",
+            "operated_by": "Aer Lingus",
+            "origin": "LHR",
+            "destination": "LIS",
+            "date": "2026-08-08",
+            "departure_local": "15:30",
+            "arrival_local": "18:39",
+            "cabin": "ECONOMY",
+            "seats_available": 8,
+            "fare_gbp": 530.96,
+            "arrival_delay_vs_original_minutes": 274
+          },
+          {
+            "option_id": "OPT-930291D46F",
+            "flight_no": "IB203",
+            "operated_by": "Iberia",
+            "origin": "LHR",
+            "destination": "LIS",
+            "date": "2026-08-08",
+            "departure_local": "17:35",
+            "arrival_local": "20:33",
+            "cabin": "ECONOMY",
+            "seats_available": 7,
+            "fare_gbp": 587.75,
+            "arrival_delay_vs_original_minutes": 388
+          },
+          {
+            "option_id": "OPT-A121C4F4A2",
+            "flight_no": "AF843",
+            "operated_by": "Air France",
+            "origin": "LHR",
+            "destination": "LIS",
+            "date": "2026-08-08",
+            "departure_local": "19:05",
+            "arrival_local": "22:12",
+            "cabin": "ECONOMY",
+            "seats_available": 7,
+            "fare_gbp": 596.13,
+            "arrival_delay_vs_original_minutes": 487
+          }
+        ],
+        "unavailable": false,
+        "note": "Supervisor must verify all passenger constraints before authorising."
+      }
+    ],
+    "referred_to_humans": [
+      {
+        "queue": "SUPERVISOR",
+        "blocking_clause": "S8.2",
+        "requested_decision": "Decide whether to authorise partner re-accommodation, or an own-carrier option on a later date.",
+        "internal_only": false
+      },
+      {
+        "queue": "GENERAL",
+        "blocking_clause": "S5.2, S10.3",
+        "requested_decision": "Re-run the entitlement assessment once the re-routed arrival is recorded, and pay whatever falls due.",
+        "internal_only": false
+      }
+    ]
+  },
+  "sources_consulted": [
+    {
+      "source_id": "SRC-booking-01",
+      "kind": "ops_api",
+      "endpoint": "/bookings/AER-5Z8Q3F",
+      "retrieved_at": "2026-09-14T18:00:47Z",
+      "evidence": {
+        "booking_ref": "AER-5Z8Q3F",
+        "customer_id": "CUS-10020",
+        "tier": "NONE",
+        "final_destination": "LIS",
+        "total_paid_gbp": 198.0,
+        "fare_breakdown": null,
+        "special_requests": "",
+        "passengers": [
+          {
+            "passenger_id": "P1",
+            "given_name": "Oliver",
+            "surname": "Ashworth",
+            "passenger_type": "ADULT",
+            "age": 34,
+            "assistance": null,
+            "cabin_booked": "ECONOMY",
+            "cabin_flown": null
+          }
+        ],
+        "segments": [
+          {
+            "segment_id": "S1",
+            "flight_no": "AK588",
+            "date": "2026-08-08",
+            "origin": "LHR",
+            "destination": "LIS",
+            "segment_fare_gbp": 151.0,
+            "cabin": "ECONOMY",
+            "is_affected": true
+          }
+        ],
+        "disruption": {
+          "affected_segment": "S1",
+          "rerouted_onto": null,
+          "arrival_delay_minutes": null,
+          "informed_days_before": 0
+        }
+      }
+    },
+    {
+      "source_id": "SRC-flight-02",
+      "kind": "ops_api",
+      "endpoint": "/flights/AK588?date=2026-08-08",
+      "retrieved_at": "2026-09-14T18:00:47Z",
+      "evidence": {
+        "flight_no": "AK588",
+        "date": "2026-08-08",
+        "origin": "LHR",
+        "destination": "LIS",
+        "distance_km": 1585,
+        "scheduled_departure": "2026-08-08T11:30:00Z",
+        "scheduled_arrival": "2026-08-08T14:05:00Z",
+        "status": "CANCELLED",
+        "cause_code": "CREW",
+        "cause_note": "Captain reported unfit to fly; no standby captain available at LHR. Aerlink LIS service suspended for remainder of date; next own-metal service 2026-08-10.",
+        "departure_delay_minutes": null
+      }
+    },
+    {
+      "source_id": "SRC-entitlement-03",
+      "kind": "ops_api",
+      "endpoint": "/entitlements/calculate?booking_ref=AER-5Z8Q3F",
+      "retrieved_at": "2026-09-14T18:00:47Z",
+      "evidence": {
+        "booking_ref": "AER-5Z8Q3F",
+        "status": "ASSESSED",
+        "authoritative": true,
+        "policy_version": "APCP-2026-04 v11.3",
+        "note": "S10.2: where this service returns a figure, that figure is the amount owed. It takes precedence over a figure derived by reading the policy text.",
+        "journey": {
+          "origin": "LHR",
+          "final_destination": "LIS",
+          "great_circle_distance_km": 1585,
+          "band": "B",
+          "affected_flight": "AK588:2026-08-08",
+          "cause_code": "CREW",
+          "cause_is_extraordinary": false,
+          "flight_status": "CANCELLED",
+          "departure_delay_minutes": null,
+          "arrival_delay_minutes_at_final_destination": null,
+          "rerouted_onto": null
+        },
+        "compensation": {
+          "amount_gbp": 0.0,
+          "status": "INSUFFICIENT_DATA",
+          "reasoning": [
+            "S1.3: great-circle distance 1585 km, therefore Band B.",
+            "S3: operational record shows cause_code=CREW, which is within Aerlink's control (S3.3).",
+            "S5.2: arrival delay at final destination is not yet known, because the passenger has not been re-routed. Compensation cannot be assessed until the passenger's re-routing (or refusal) is settled. S10.3 applies."
+          ]
+        },
+        "duty_of_care": {
+          "triggered": true,
+          "basis": "S4.1: flight cancelled, care owed immediately.",
+          "note": "S4 care is owed regardless of cause, including extraordinary circumstances (S4.3).",
+          "entitlements": [
+            {
+              "type": "meals_refreshments",
+              "cap_gbp": 30.0,
+              "per": "passenger per 6 hours"
+            },
+            {
+              "type": "communication",
+              "cap": "two calls or equivalent"
+            },
+            {
+              "type": "hotel",
+              "cap_gbp": 180.0,
+              "per": "room per night",
+              "max_nights": 3,
+              "note": "Subject to station allocation, S4.5."
+            },
+            {
+              "type": "transport",
+              "cap_gbp": 45.0,
+              "per": "journey"
+            }
+          ]
+        },
+        "passengers": [
+          {
+            "passenger_id": "P1",
+            "name": "Oliver Ashworth",
+            "passenger_type": "ADULT",
+            "compensation_gbp": 0.0,
+            "compensation_status": "INSUFFICIENT_DATA",
+            "downgrade_reimbursement_gbp": 0.0,
+            "downgrade_reasoning": [],
+            "flags": [],
+            "total_payable_gbp": 0.0
+          }
+        ],
+        "total_payable_gbp": 0.0
+      }
+    },
+    {
+      "source_id": "SRC-customer-04",
+      "kind": "ops_api",
+      "endpoint": "/customers/CUS-10020/history",
+      "retrieved_at": "2026-09-14T18:00:47Z",
+      "evidence": {
+        "customer_id": "CUS-10020",
+        "tier": "NONE",
+        "flags": [],
+        "history": []
+      }
+    },
+    {
+      "source_id": "SRC-feed-05",
+      "kind": "ops_api",
+      "endpoint": "/disruption/feed",
+      "retrieved_at": "2026-09-14T18:00:47Z",
+      "evidence": {
+        "generated_at": "2026-08-07T06:00:00Z",
+        "advisory_count": 8,
+        "event_count": 27
+      }
+    },
+    {
+      "source_id": "SRC-availability-06",
+      "kind": "ops_api",
+      "endpoint": "/flights/availability?booking_ref=AER-5Z8Q3F&date=2026-08-08&from=LHR&page=1&page_size=100&to=LIS",
+      "retrieved_at": "2026-09-14T18:00:49Z",
+      "evidence": {
+        "query": {
+          "from": "LHR",
+          "to": "LIS",
+          "date": "2026-08-08",
+          "after": null,
+          "booking_ref": "AER-5Z8Q3F",
+          "carrier_scope": "own"
+        },
+        "total_results": 0,
+        "total_pages": 0,
+        "sample": []
+      }
+    },
+    {
+      "source_id": "SRC-availability-07",
+      "kind": "ops_api",
+      "endpoint": "/flights/availability/partners?booking_ref=AER-5Z8Q3F&date=2026-08-08&from=LHR&page=1&page_size=100&to=LIS",
+      "retrieved_at": "2026-09-14T18:00:51Z",
+      "evidence": {
+        "query": {
+          "from": "LHR",
+          "to": "LIS",
+          "date": "2026-08-08",
+          "after": null,
+          "booking_ref": "AER-5Z8Q3F",
+          "carrier_scope": "partner"
+        },
+        "total_results": 11,
+        "total_pages": 1,
+        "sample": [
+          {
+            "option_id": "OPT-21F669F1E6",
+            "flight_no": "KL413",
+            "operated_by": "KLM",
+            "origin": "LHR",
+            "destination": "LIS",
+            "date": "2026-08-08",
+            "departure_local": "05:15",
+            "arrival_local": "07:50",
+            "cabin": "ECONOMY",
+            "seats_available": 4,
+            "fare_gbp": 903.25,
+            "arrival_delay_vs_original_minutes": -375
+          },
+          {
+            "option_id": "OPT-56F4DC800F",
+            "flight_no": "IB371",
+            "operated_by": "Iberia",
+            "origin": "LHR",
+            "destination": "LIS",
+            "date": "2026-08-08",
+            "departure_local": "10:20",
+            "arrival_local": "13:12",
+            "cabin": "ECONOMY",
+            "seats_available": 0,
+            "fare_gbp": 917.95,
+            "arrival_delay_vs_original_minutes": -53
+          },
+          {
+            "option_id": "OPT-0970CD892D",
+            "flight_no": "EI564",
+            "operated_by": "Aer Lingus",
+            "origin": "LHR",
+            "destination": "LIS",
+            "date": "2026-08-08",
+            "departure_local": "15:30",
+            "arrival_local": "18:39",
+            "cabin": "ECONOMY",
+            "seats_available": 8,
+            "fare_gbp": 530.96,
+            "arrival_delay_vs_original_minutes": 274
+          }
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "ACT-esc-01-general",
+      "action_type": "escalation",
+      "state": "succeeded",
+      "booking_ref": "AER-5Z8Q3F",
+      "passenger_ids": [],
+      "amount": null,
+      "itinerary": null,
+      "policy_basis": [
+        "S12.5",
+        "S5.2, S10.3"
+      ],
+      "preconditions_checked": {
+        "referral_completeness": "S12.5 requires what the passenger asked for, what the record shows, the recommended outcome, the blocking condition, and what the referring party must decide. All five are present.",
+        "benefit_scope_keys": [],
+        "refreshed_immediately_before_write": {
+          "refreshed": false,
+          "reason": "no mutable precondition"
+        }
+      },
+      "consent_basis": null,
+      "blocked_reason": null,
+      "fingerprint": "65e9651420406103c45248591dd692bf5ef9f3ea07fd8f784f9f8d37471bfd5a",
+      "journal_key": "437",
+      "request_summary": {
+        "path": "/escalations",
+        "fields": {
+          "queue": "GENERAL",
+          "blocking_clause": "S5.2, S10.3",
+          "booking_ref": "AER-5Z8Q3F"
+        }
+      },
+      "response_status": 201,
+      "returned_ids": {
+        "escalation_id": "ESC-00022",
+        "raised_at": "2026-09-14T18:00:51Z",
+        "status": "OPEN",
+        "queue": "GENERAL"
+      },
+      "verification": "Confirmed by readback: ESC-00022 appears in GET /_audit.",
+      "error": null
+    },
+    {
+      "action_id": "ACT-esc-02-supervisor",
+      "action_type": "escalation",
+      "state": "succeeded",
+      "booking_ref": "AER-5Z8Q3F",
+      "passenger_ids": [],
+      "amount": null,
+      "itinerary": null,
+      "policy_basis": [
+        "S12.5",
+        "S8.2"
+      ],
+      "preconditions_checked": {
+        "referral_completeness": "S12.5 requires what the passenger asked for, what the record shows, the recommended outcome, the blocking condition, and what the referring party must decide. All five are present.",
+        "benefit_scope_keys": [],
+        "refreshed_immediately_before_write": {
+          "refreshed": false,
+          "reason": "no mutable precondition"
+        }
+      },
+      "consent_basis": null,
+      "blocked_reason": null,
+      "fingerprint": "138c18b56439e406435c45fb74ba9ff246c8d94976a1537a4d3c68bf94201cba",
+      "journal_key": "438",
+      "request_summary": {
+        "path": "/escalations",
+        "fields": {
+          "queue": "SUPERVISOR",
+          "blocking_clause": "S8.2",
+          "booking_ref": "AER-5Z8Q3F"
+        }
+      },
+      "response_status": 201,
+      "returned_ids": {
+        "escalation_id": "ESC-00023",
+        "raised_at": "2026-09-14T18:00:51Z",
+        "status": "OPEN",
+        "queue": "SUPERVISOR"
+      },
+      "verification": "Confirmed by readback: ESC-00023 appears in GET /_audit.",
+      "error": null
+    }
+  ],
+  "uncertainties": [
+    {
+      "issue": "No own-carrier seat matched the passenger's constraints in ECONOMY cabin on 2026-08-08.",
+      "effect_on_decision": "Re-routing referred to a supervisor rather than booked."
+    },
+    {
+      "issue": "Arrival delay at the final destination is not yet established, so compensation is not assessable.",
+      "effect_on_decision": "No compensation paid. Referred for assessment once the passenger has actually travelled."
+    }
+  ],
+  "human_handover": {
+    "required": true,
+    "reason": "S8.2; S5.2, S10.3",
+    "escalation_ids": [
+      "ESC-00022",
+      "ESC-00023"
+    ],
+    "api_handover_succeeded": true,
+    "next_steps": [
+      "Decide whether to authorise partner re-accommodation, or an own-carrier option on a later date.",
+      "Re-run the entitlement assessment once the re-routed arrival is recorded, and pay whatever falls due."
+    ]
+  },
+  "passenger_response": {
+    "language": "en",
+    "subject": "Your cancelled flight AK588",
+    "body": "Dear Oliver Ashworth,\n\nOur record shows that flight AK588 on 2026-08-08 was cancelled because the captain was reported unfit to fly and no standby captain was available at LHR. The Aerlink LIS service was suspended for the remainder of that date. Your record shows that no new flight has been booked.\n\nWe have not booked you onto anything. We could not establish a suitable own-flight option on that date, so a colleague has to decide what to offer you next.\n\nWe cannot work out compensation yet. It depends on how late you actually arrive at your final destination, and that is not known until your new flight has run. It will be assessed then. Do not read this as a decision either way.\n\nAs the flight was cancelled, you are entitled to reasonable care while you wait. This includes meals and refreshments up to £30 per passenger per 6 hours, two calls or equivalent, hotel accommodation up to £180 per room per night for up to 3 nights, subject to station allocation, and transport up to £45 per journey.\n\nKind regards,\nDisruption Desk",
+    "status": "draft",
+    "note": "Draft only. The operations API exposes no send operation, so this text has not reached the passenger.",
+    "generated_by": "model"
+  },
+  "usage": {
+    "model": "gpt-5.6-luna",
+    "price_source": "https://developers.openai.com/api/docs/pricing",
+    "price_verified_on": "2026-09-14",
+    "prices_usd_per_mtok": {
+      "input": "0.20",
+      "cached_input": "0.02",
+      "cache_write": "0.2500",
+      "output": "1.20"
+    },
+    "calls": [
+      {
+        "purpose": "extraction",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_00eadb180bfaa243016aa8364c9ad487d1bd76e461a002dbb2",
+        "input_tokens": 2918,
+        "cached_input_tokens": 2597,
+        "cache_write_tokens": 318,
+        "output_tokens": 554,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000797",
+        "reserved_upper_bound_usd": "0.003703",
+        "reservation_resolved": true,
+        "note": null
+      },
+      {
+        "purpose": "narration",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_082d49966d940520016aa83655ac3087d1a39f396940f7a124",
+        "input_tokens": 1600,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 1597,
+        "output_tokens": 256,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000707",
+        "reserved_upper_bound_usd": "0.002184",
+        "reservation_resolved": true,
+        "note": null
+      }
+    ],
+    "case_calculated_cost_usd": "0.001504",
+    "case_unresolved_reservation_upper_bound_usd": "0",
+    "note": "Cost is derived from the usage the API reported, priced from the table above. Cached input and reasoning tokens are subsets of input and output tokens respectively and are each counted once. This is a calculated figure, not a billing statement from OpenAI."
+  },
+  "errors": []
+}

@@ -18,6 +18,7 @@ Exit code 0 if clean, 1 if anything needs attention or nothing was found to chec
 from __future__ import annotations
 
 import re
+import json
 import sys
 from pathlib import Path
 
@@ -81,8 +82,49 @@ PATTERNS: list[tuple[re.Pattern[str], str]] = [
     ),
 ]
 
+# Decode JSONL leaves before scanning: escaped newlines are not credential values.
+def text_leaves(value):
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if isinstance(item, str) and re.search(r"(?i)(api_key|token|secret|password)$", key):
+                yield key + "=" + item
+            yield from text_leaves(item)
+    elif isinstance(value, list):
+        for item in value:
+            yield from text_leaves(item)
+    elif isinstance(value, str):
+        if value.lstrip().startswith(("{", "[")):
+            try:
+                yield from text_leaves(json.loads(value))
+                return
+            except (ValueError, RecursionError):
+                pass
+        yield value.replace(r"\n", "\n").replace(r'\"', '"')
+
+
+def credential_matches(text):
+    # Vendor token shapes remain unconditionally flagged, including source fixtures.
+    for pattern, what in PATTERNS[:6]:
+        for match in pattern.finditer(text):
+            yield match, what
+    pattern = re.compile(
+        r"(?i)\b(?:[A-Z0-9_]*(?:API_KEY|_TOKEN|_SECRET|PASSWORD)|x-ops-key|authorization)"
+        r"[ \t]*[=:][ \t]*(?:(?:bearer|token|basic|apikey)[ \t]+)?"
+        r"[\"']?(?P<value>[A-Za-z0-9][A-Za-z0-9_./+=-]{7,})")
+    for match in pattern.finditer(text):
+        value = match.group("value")
+        lowered = value.casefold()
+        if lowered.startswith(("your_", "your-", "placeholder", "changeme")):
+            continue
+        # References and calls in actual source-code transcripts are not literal keys.
+        if (lowered in {"test-key", "test-openai-key"} or lowered.endswith(("_api_key", "_token", "_secret", ".get"))
+                or text[match.end():].lstrip().startswith("(")):
+            continue
+        yield match, "a credential assignment or header"
+
+
 TEXT_SUFFIXES = {".md", ".txt", ".jsonl", ".json", ".html", ".log"}
-SKIP_NAMES = {"README.md"}
+SKIP_NAMES = {"README.md", "export-manifest.json"}
 
 
 def main(argv: list[str]) -> int:
@@ -116,11 +158,16 @@ def main(argv: list[str]) -> int:
             print("could not read {}: {}".format(path, exc))
             return 1
         for number, line in enumerate(text.splitlines(), start=1):
-            seen: set[str] = set()
-            for pattern, what in PATTERNS:
-                if pattern.search(line) and what not in seen:
-                    seen.add(what)
-                    findings.append((path, number, what))
+            try:
+                leaves = list(text_leaves(json.loads(line))) if path.suffix == ".jsonl" else [line]
+            except (ValueError, RecursionError):
+                leaves = [line]
+            seen = set()
+            for leaf in leaves:
+                for _match, what in credential_matches(leaf):
+                    if what not in seen:
+                        seen.add(what)
+                        findings.append((path, number, what))
 
     print("Checked {} file(s):".format(len(files)))
     for path in files:

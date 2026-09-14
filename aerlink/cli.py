@@ -21,8 +21,9 @@ from .config import (
     SWEEP_ADMISSION_CEILING_USD,
     ConfigError,
     load_config,
+    redact,
 )
-from .journal import Journal
+from .journal import Journal, JournalLocked
 from .llm import LLMClient
 from .ops_client import OpsClient
 from .pipeline import CaseInputError, load_case, load_case_dir, run_case
@@ -31,6 +32,8 @@ from .report import (
     render_console_summary,
     write_batch_summary,
     write_case_record,
+    _atomic_write_json,
+    validate_case_id,
 )
 from .schemas import CaseStatus
 
@@ -115,6 +118,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.dry_run and args.reset_ops:
+        print("configuration error: --dry-run cannot be combined with --reset-ops", file=sys.stderr)
+        return EXIT_CONFIG
+    for ceiling in (args.run_ceiling_usd, args.session_ceiling_usd):
+        if not ceiling.is_finite() or ceiling <= 0:
+            print("configuration error: spending ceilings must be finite positive amounts", file=sys.stderr)
+            return EXIT_CONFIG
 
     try:
         config = load_config(
@@ -138,9 +148,17 @@ def main(argv: list[str] | None = None) -> int:
 
     run_id = "run-{}".format(uuid.uuid4().hex[:10])
     output_dir = Path(args.output)
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    journal = Journal(config.journal_path, namespace=args.journal_namespace)
+    try:
+        identifiers = [validate_case_id(case.case_id).casefold() for case in cases]
+        if len(identifiers) != len(set(identifiers)):
+            raise ValueError("duplicate case IDs would overwrite case records")
+        if output_dir.exists() and any(output_dir.iterdir()):
+            raise ValueError("output directory is not empty; choose a new --output to preserve prior records")
+        output_dir.mkdir(parents=True, exist_ok=True)
+        journal = Journal(config.journal_path, namespace=args.journal_namespace)
+    except (OSError, ValueError, JournalLocked) as exc:
+        print("configuration error: {}".format(exc), file=sys.stderr)
+        return EXIT_CONFIG
     ops = OpsClient(config)
     notes: list[str] = list(config.notes)
 
@@ -154,14 +172,18 @@ def main(argv: list[str] | None = None) -> int:
                 ),
                 file=sys.stderr,
             )
+            ops.close()
+            journal.close()
             return EXIT_CONFIG
     except Exception as exc:  # noqa: BLE001
         print(
             "could not reach the operations API at {}: {}".format(
-                config.ops_base_url, str(exc)[:200]
+                config.ops_base_url, redact(str(exc), config.openai_api_key, config.ops_api_key)[:200]
             ),
             file=sys.stderr,
         )
+        ops.close()
+        journal.close()
         return EXIT_CONFIG
 
     if args.reset_ops:
@@ -171,6 +193,8 @@ def main(argv: list[str] | None = None) -> int:
                 "local journal rows cannot suppress actions in the clean run.",
                 file=sys.stderr,
             )
+            ops.close()
+            journal.close()
             return EXIT_CONFIG
         ops.reset()
         # Record the reset in the journal. This is the only thing that makes an
@@ -207,10 +231,12 @@ def main(argv: list[str] | None = None) -> int:
         except Exception as exc:  # noqa: BLE001
             print(
                 "model {!r} is not available to this API key: {}".format(
-                    config.openai_model, str(exc)[:200]
+                    config.openai_model, redact(str(exc), config.openai_api_key, config.ops_api_key)[:200]
                 ),
                 file=sys.stderr,
             )
+            ops.close()
+            journal.close()
             return EXIT_CONFIG
 
     if args.dry_run:
@@ -252,10 +278,12 @@ def main(argv: list[str] | None = None) -> int:
             except Exception as exc:  # noqa: BLE001
                 notes.append(
                     "Final reconciliation against GET /_audit failed: {}".format(
-                        str(exc)[:200]
+                        redact(str(exc), config.openai_api_key, config.ops_api_key)[:200]
                     )
                 )
 
+        if audit is not None:
+            _atomic_write_json(output_dir / "ops-audit.json", audit)
         summary = build_batch_summary(
             records,
             run_id=run_id,
@@ -266,6 +294,10 @@ def main(argv: list[str] | None = None) -> int:
             notes=notes,
             server_was_reset=args.reset_ops,
         )
+        rec = summary["operations_api_reconciliation"]
+        if not args.dry_run and (not rec.get("performed") or rec.get("recorded_but_absent_from_server")
+                                 or rec.get("in_server_but_not_recorded_by_us")):
+            exit_code = EXIT_EXECUTION
         summary_path = write_batch_summary(summary, output_dir)
         print(render_console_summary(summary))
         print("\nrecords: {}\nsummary: {}".format(output_dir, summary_path))

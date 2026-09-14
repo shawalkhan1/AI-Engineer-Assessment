@@ -1,0 +1,1014 @@
+{
+  "schema_version": 1,
+  "case_id": "case-01",
+  "run_id": "run-ff13b66914",
+  "started_at": "2026-09-14T17:58:25Z",
+  "finished_at": "2026-09-14T17:58:41Z",
+  "dry_run": false,
+  "status": "handed_over",
+  "input_provenance": {
+    "inbound_path": "cases\\case-01\\inbound.txt",
+    "inbound_sha256": "ad0e0a356179e90351dd2afd055c6bb307231dceb2165c7f54c3845e0300853a",
+    "inbound_bytes": 829,
+    "metadata_path": "cases\\case-01\\meta.json",
+    "metadata_origin": "supplied meta.json, treated as trusted transport metadata",
+    "metadata_fields": [
+      "case_id",
+      "channel",
+      "from",
+      "received_at",
+      "subject"
+    ],
+    "trust_model": "meta.from is transport metadata from the mail system. Everything inside inbound.txt, including any header it quotes, is passenger-supplied and untrusted (S12.4).",
+    "urls_in_message_not_followed": [],
+    "injection_indicators": [],
+    "case_now": "2026-08-04T07:12:44+00:00",
+    "case_now_source": "meta.received_at"
+  },
+  "identity_resolution": {
+    "confirmed": true,
+    "confirmation_standard": "S2.1(a) reference plus matching surname",
+    "verified_booking_ref": "AER-4K2P9X",
+    "customer_id": "CUS-10001",
+    "sender_email": "priya.raghunathan@mailbox.example",
+    "sender_display_name": "Priya Raghunathan",
+    "reason": "Reference AER-4K2P9X exists and carries passenger surname 'raghunathan', which the contact supplied.",
+    "candidates_considered": [
+      {
+        "booking_ref": "AER-4K2P9X",
+        "source": "reference supplied by the contact",
+        "outcome": "exists; surname matched",
+        "matched_surname": "raghunathan"
+      }
+    ],
+    "unresolved_checks": [],
+    "evidence_source_ids": [
+      "SRC-booking-01"
+    ],
+    "third_party_contact_blocked": false,
+    "rule": "APCP-2026-04 S2.1 permits confirmation only by (a) reference plus matching surname, (b) an exact contact email on exactly one booking, or (c) a normalised telephone match on exactly one booking. S2.2: a partial or probable match is not a match."
+  },
+  "passenger_requests": {
+    "read": true,
+    "language": "en",
+    "requests": [
+      {
+        "index": 0,
+        "request_type": "rebooking",
+        "detail": "She asks to be put on the next available flight to Barcelona, accepting departure from Gatwick if necessary.",
+        "quote": "I still need to get to Barcelona. I have a conference and I need to be there by this evening at the latest, so please could you put me on the next available flight? I don't mind which airport I go from, Gatwick is fine too if that helps.",
+        "quote_verified": true,
+        "for_passenger_names": [
+          "Priya Raghunathan"
+        ],
+        "stated_at": "2026-08-04T08:12:44+01:00",
+        "passenger_has_authorised_booking": true,
+        "live": true,
+        "not_live_because": []
+      },
+      {
+        "index": 1,
+        "request_type": "expense_reimbursement",
+        "detail": "She asks to be reimbursed for breakfast and two coffees bought while waiting at Heathrow and says she has kept the receipts.",
+        "quote": "I bought breakfast and two coffees while I was waiting and I've kept the receipts.",
+        "quote_verified": true,
+        "for_passenger_names": [
+          "Priya Raghunathan"
+        ],
+        "stated_at": "2026-08-04T08:12:44+01:00",
+        "passenger_has_authorised_booking": false,
+        "live": true,
+        "not_live_because": []
+      }
+    ],
+    "preferences_and_consent": {
+      "explicitly_asked_for_earliest_available": true,
+      "arrive_by_local": "2026-08-04T23:59",
+      "travel_date_iso": "2026-08-04",
+      "depart_not_before_local": null,
+      "alternative_origin_airports": [
+        "LGW"
+      ],
+      "supporting_quote": "I have a conference and I need to be there by this evening at the latest, so please could you put me on the next available flight? I don't mind which airport I go from, Gatwick is fine too if that helps."
+    },
+    "passenger_claims_to_investigate": [
+      {
+        "topic": "cancellation",
+        "claim": "She says that flight AK412 from Heathrow to Barcelona was cancelled on the morning of 4 August 2026.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "My flight AK412 from Heathrow to Barcelona this morning was cancelled."
+      },
+      {
+        "topic": "prior_contact",
+        "claim": "She says she was at Heathrow from 5:30 this morning and nobody at the desk could tell her anything.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "I was at Heathrow from half five this morning and nobody at the desk could tell me anything"
+      },
+      {
+        "topic": "money_owed",
+        "claim": "She says she bought breakfast and two coffees while waiting and kept the receipts.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "I bought breakfast and two coffees while I was waiting and I've kept the receipts."
+      }
+    ],
+    "embedded_instructions_refused": [],
+    "unclear_points": [],
+    "span_verification": {
+      "spans_verified": 8,
+      "spans_unverified": 0,
+      "unverified": [],
+      "verified_booking_refs": [
+        "AER-4K2P9X"
+      ],
+      "verified_request_indexes": [
+        0,
+        1
+      ],
+      "note": "A quote that cannot be found in the message is not evidence. Claims listed under 'unverified' are recorded but are not relied on."
+    },
+    "we_asked_the_passenger_for": [],
+    "what_became_of_each_request": [
+      {
+        "request_type": "rebooking",
+        "detail": "She asks to be put on the next available flight to Barcelona, accepting departure from Gatwick if necessary.",
+        "addressed_by": [
+          "action proposed",
+          "referred to a human"
+        ],
+        "addressed": true
+      },
+      {
+        "request_type": "expense_reimbursement",
+        "detail": "She asks to be reimbursed for breakfast and two coffees bought while waiting at Heathrow and says she has kept the receipts.",
+        "addressed_by": [
+          "referred to a human"
+        ],
+        "addressed": true
+      }
+    ],
+    "unaddressed_requests": []
+  },
+  "verified_facts": {
+    "gathered": true,
+    "case_now": "2026-08-04T07:12:44+00:00",
+    "case_now_source": "meta.received_at",
+    "booking": {
+      "booking_ref": "AER-4K2P9X",
+      "tier": "SILVER",
+      "final_destination": "BCN",
+      "total_paid_gbp": 214.0,
+      "fare_breakdown": null,
+      "special_requests": "",
+      "passengers": [
+        {
+          "passenger_id": "P1",
+          "name": "Priya Raghunathan",
+          "passenger_type": "ADULT",
+          "assistance": null,
+          "cabin_booked": "ECONOMY",
+          "cabin_flown": null
+        }
+      ],
+      "segments": [
+        {
+          "segment_id": "S1",
+          "flight_no": "AK412",
+          "date": "2026-08-04",
+          "origin": "LHR",
+          "destination": "BCN",
+          "segment_fare_gbp": 158.0,
+          "cabin": "ECONOMY",
+          "is_affected": true
+        }
+      ],
+      "disruption": {
+        "affected_segment": "S1",
+        "rerouted_onto": null,
+        "arrival_delay_minutes": null,
+        "informed_days_before": 0
+      }
+    },
+    "flight_operational_record": {
+      "flight_no": "AK412",
+      "date": "2026-08-04",
+      "origin": "LHR",
+      "destination": "BCN",
+      "distance_km": 1146,
+      "scheduled_departure": "2026-08-04T07:20:00Z",
+      "scheduled_arrival": "2026-08-04T10:35:00Z",
+      "status": "CANCELLED",
+      "cause_code": "WEATHER",
+      "cause_note": "Thunderstorm activity over BCN terminal area; airport ground stop 06:10-11:40 local.",
+      "departure_delay_minutes": null,
+      "aircraft": "A320",
+      "operated_by": "Aerlink"
+    },
+    "entitlement_service": {
+      "status": "ASSESSED",
+      "authoritative": true,
+      "policy_version": "APCP-2026-04 v11.3",
+      "journey": {
+        "origin": "LHR",
+        "final_destination": "BCN",
+        "great_circle_distance_km": 1146,
+        "band": "A",
+        "affected_flight": "AK412:2026-08-04",
+        "cause_code": "WEATHER",
+        "cause_is_extraordinary": true,
+        "flight_status": "CANCELLED",
+        "departure_delay_minutes": null,
+        "arrival_delay_minutes_at_final_destination": null,
+        "rerouted_onto": null
+      },
+      "compensation": {
+        "amount_gbp": 0.0,
+        "status": "NOT_PAYABLE",
+        "reasoning": [
+          "S1.3: great-circle distance 1146 km, therefore Band A.",
+          "S3: operational record shows cause_code=WEATHER, which is an extraordinary circumstance (S3.2).",
+          "S5.1(b): cause is extraordinary, therefore no compensation is payable. Duty of care under S4 is unaffected."
+        ]
+      },
+      "duty_of_care": {
+        "triggered": true,
+        "basis": "S4.1: flight cancelled, care owed immediately.",
+        "note": "S4 care is owed regardless of cause, including extraordinary circumstances (S4.3).",
+        "entitlements": [
+          {
+            "type": "meals_refreshments",
+            "cap_gbp": 30.0,
+            "per": "passenger per 6 hours"
+          },
+          {
+            "type": "communication",
+            "cap": "two calls or equivalent"
+          },
+          {
+            "type": "hotel",
+            "cap_gbp": 180.0,
+            "per": "room per night",
+            "max_nights": 3,
+            "note": "Subject to station allocation, S4.5."
+          },
+          {
+            "type": "transport",
+            "cap_gbp": 45.0,
+            "per": "journey"
+          }
+        ]
+      },
+      "passengers": [
+        {
+          "passenger_id": "P1",
+          "name": "Priya Raghunathan",
+          "passenger_type": "ADULT",
+          "compensation_gbp": 0.0,
+          "compensation_status": "NOT_PAYABLE",
+          "downgrade_reimbursement_gbp": 0.0,
+          "downgrade_reasoning": [],
+          "flags": [],
+          "total_payable_gbp": 0.0
+        }
+      ],
+      "total_payable_gbp": 0.0
+    },
+    "customer_history": {
+      "customer_id": "CUS-10001",
+      "tier": "SILVER",
+      "flags": [],
+      "previous_cases": []
+    },
+    "network_feed_corroboration": {
+      "flight_events": [],
+      "advisories": []
+    }
+  },
+  "policy_evaluation": {
+    "evaluated": true,
+    "policy_document": "APCP-2026-04 v11.3",
+    "authoritative_source": "GET /entitlements/calculate. S10.2 makes its figure the amount owed; S10.4 forbids substituting a locally derived one.",
+    "eligible_remedies": [
+      {
+        "remedy": "statutory_compensation",
+        "status": "NOT_PAYABLE",
+        "amount_gbp": 0.0,
+        "clause": "S5",
+        "source": "entitlement calculation service (authoritative, S10.2)",
+        "reasoning": [
+          "S1.3: great-circle distance 1146 km, therefore Band A.",
+          "S3: operational record shows cause_code=WEATHER, which is an extraordinary circumstance (S3.2).",
+          "S5.1(b): cause is extraordinary, therefore no compensation is payable. Duty of care under S4 is unaffected."
+        ]
+      },
+      {
+        "remedy": "duty_of_care",
+        "status": "TRIGGERED",
+        "clause": "S4",
+        "basis": "S4.1: flight cancelled, care owed immediately.",
+        "entitlements": [
+          {
+            "type": "meals_refreshments",
+            "cap_gbp": 30.0,
+            "per": "passenger per 6 hours"
+          },
+          {
+            "type": "communication",
+            "cap": "two calls or equivalent"
+          },
+          {
+            "type": "hotel",
+            "cap_gbp": 180.0,
+            "per": "room per night",
+            "max_nights": 3,
+            "note": "Subject to station allocation, S4.5."
+          },
+          {
+            "type": "transport",
+            "cap_gbp": 45.0,
+            "per": "journey"
+          }
+        ],
+        "note": "S4 care is owed regardless of cause, including extraordinary circumstances (S4.3)."
+      }
+    ],
+    "already_provided": [],
+    "independent_cross_check": {
+      "agrees_with_authoritative_service": true,
+      "checks": [
+        {
+          "check": "S1.3 band",
+          "independently_derived": "A",
+          "service_returned": "A",
+          "basis": "distance 1146 km",
+          "agrees": true
+        },
+        {
+          "check": "S3.2 cause is extraordinary",
+          "independently_derived": true,
+          "service_returned": true,
+          "basis": "cause_code WEATHER",
+          "agrees": true
+        },
+        {
+          "check": "S5 compensation status",
+          "independently_derived": "NOT_PAYABLE",
+          "service_returned": "NOT_PAYABLE",
+          "basis": "arrival delay None min, re-routed onto None",
+          "agrees": true
+        },
+        {
+          "check": "S5.3/S5.4 compensation amount (pence)",
+          "independently_derived": 0,
+          "service_returned": 0,
+          "basis": "band A",
+          "agrees": true
+        },
+        {
+          "check": "S9.4 downgrade reimbursement for P1 (pence)",
+          "independently_derived": 0,
+          "service_returned": 0,
+          "basis": "segment S1 fare 15800 pence, NOT the booking total of 21400 pence",
+          "agrees": true
+        }
+      ],
+      "disagreements": [],
+      "rule": "S10.2 makes the entitlement service's figure the amount owed. This check never replaces that figure. Under S10.4, a disagreement is referred with both numbers stated, not resolved locally."
+    },
+    "rule_references": [
+      "S12.1, S6.3",
+      "S6.1(a)",
+      "S6.2",
+      "S6.4"
+    ],
+    "answers_given_without_action": [
+      {
+        "request": "compensation",
+        "answer_basis": "Not payable. Recorded cause is WEATHER and the arrival delay at the final destination is None minutes. S16 requires both figures to be stated. Reasoning: S1.3: great-circle distance 1146 km, therefore Band A. S3: operational record shows cause_code=WEATHER, which is an extraordinary circumstance (S3.2). S5.1(b): cause is extraordinary, therefore no compensation is payable. Duty of care under S4 is unaffected."
+      }
+    ]
+  },
+  "decision": {
+    "status": "handed_over",
+    "rationale": [
+      "S3.1: the operational record is authoritative on cause. AK412 on 2026-08-04 is recorded as CANCELLED with cause WEATHER (Thunderstorm activity over BCN terminal area; airport ground stop 06:10-11:40 local.).",
+      "S4.3: duty of care is unaffected by the cause and is owed regardless."
+    ],
+    "what_the_passenger_gets": [],
+    "rejected_alternatives": [
+      {
+        "context": "re-routing option selection",
+        "chosen": {
+          "option_id": "OPT-F1C4639EBC",
+          "flight_no": "AK845",
+          "operated_by": "Aerlink",
+          "origin": "LHR",
+          "destination": "BCN",
+          "date": "2026-08-04",
+          "departure_local": "09:15",
+          "arrival_local": "11:27",
+          "cabin": "ECONOMY",
+          "seats_available": 9,
+          "fare_gbp": 120.7,
+          "arrival_delay_vs_original_minutes": 52
+        },
+        "runners_up": [
+          {
+            "option_id": "OPT-E342AF6A4F",
+            "flight_no": "AK687",
+            "operated_by": "Aerlink",
+            "origin": "LHR",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "09:25",
+            "arrival_local": "11:31",
+            "cabin": "ECONOMY",
+            "seats_available": 6,
+            "fare_gbp": 120.54,
+            "arrival_delay_vs_original_minutes": 56
+          },
+          {
+            "option_id": "OPT-FE09739933",
+            "flight_no": "AK625",
+            "operated_by": "Aerlink",
+            "origin": "LHR",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "09:30",
+            "arrival_local": "11:46",
+            "cabin": "ECONOMY",
+            "seats_available": 7,
+            "fare_gbp": 136.76,
+            "arrival_delay_vs_original_minutes": 71
+          },
+          {
+            "option_id": "OPT-BBEBF2BCA1",
+            "flight_no": "AK532",
+            "operated_by": "Aerlink",
+            "origin": "LHR",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "09:55",
+            "arrival_local": "12:04",
+            "cabin": "ECONOMY",
+            "seats_available": 1,
+            "fare_gbp": 216.53,
+            "arrival_delay_vs_original_minutes": 89
+          }
+        ],
+        "rule": "Earliest arrival meeting every constraint; ties broken by the lower listed fare."
+      },
+      {
+        "context": "re-routing option selection",
+        "chosen": {
+          "option_id": "OPT-418287FFBA",
+          "flight_no": "AK275",
+          "operated_by": "Aerlink",
+          "origin": "LGW",
+          "destination": "BCN",
+          "date": "2026-08-04",
+          "departure_local": "08:15",
+          "arrival_local": "10:10",
+          "cabin": "ECONOMY",
+          "seats_available": 9,
+          "fare_gbp": 52.24,
+          "arrival_delay_vs_original_minutes": -25
+        },
+        "runners_up": [
+          {
+            "option_id": "OPT-CD797F4AFA",
+            "flight_no": "AK276",
+            "operated_by": "Aerlink",
+            "origin": "LGW",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "08:45",
+            "arrival_local": "10:32",
+            "cabin": "ECONOMY",
+            "seats_available": 4,
+            "fare_gbp": 122.15,
+            "arrival_delay_vs_original_minutes": -3
+          },
+          {
+            "option_id": "OPT-1374B25D8D",
+            "flight_no": "AK152",
+            "operated_by": "Aerlink",
+            "origin": "LGW",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "09:10",
+            "arrival_local": "10:51",
+            "cabin": "ECONOMY",
+            "seats_available": 6,
+            "fare_gbp": 187.93,
+            "arrival_delay_vs_original_minutes": 16
+          },
+          {
+            "option_id": "OPT-F119EC11DF",
+            "flight_no": "AK922",
+            "operated_by": "Aerlink",
+            "origin": "LGW",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "09:20",
+            "arrival_local": "11:28",
+            "cabin": "ECONOMY",
+            "seats_available": 3,
+            "fare_gbp": 107.55,
+            "arrival_delay_vs_original_minutes": 53
+          }
+        ],
+        "rule": "Earliest arrival meeting every constraint; ties broken by the lower listed fare."
+      }
+    ],
+    "referred_to_humans": [
+      {
+        "queue": "SUPERVISOR",
+        "blocking_clause": "S12.1, S6.3",
+        "requested_decision": "Authorise the re-routing.",
+        "internal_only": false
+      },
+      {
+        "queue": "SUPERVISOR",
+        "blocking_clause": "S4.4 (no operations API endpoint exists)",
+        "requested_decision": "Reimburse against receipts within the S4.2 caps, or explain why not.",
+        "internal_only": false
+      }
+    ]
+  },
+  "sources_consulted": [
+    {
+      "source_id": "SRC-booking-01",
+      "kind": "ops_api",
+      "endpoint": "/bookings/AER-4K2P9X",
+      "retrieved_at": "2026-09-14T17:58:33Z",
+      "evidence": {
+        "booking_ref": "AER-4K2P9X",
+        "customer_id": "CUS-10001",
+        "tier": "SILVER",
+        "final_destination": "BCN",
+        "total_paid_gbp": 214.0,
+        "fare_breakdown": null,
+        "special_requests": "",
+        "passengers": [
+          {
+            "passenger_id": "P1",
+            "given_name": "Priya",
+            "surname": "Raghunathan",
+            "passenger_type": "ADULT",
+            "age": 34,
+            "assistance": null,
+            "cabin_booked": "ECONOMY",
+            "cabin_flown": null
+          }
+        ],
+        "segments": [
+          {
+            "segment_id": "S1",
+            "flight_no": "AK412",
+            "date": "2026-08-04",
+            "origin": "LHR",
+            "destination": "BCN",
+            "segment_fare_gbp": 158.0,
+            "cabin": "ECONOMY",
+            "is_affected": true
+          }
+        ],
+        "disruption": {
+          "affected_segment": "S1",
+          "rerouted_onto": null,
+          "arrival_delay_minutes": null,
+          "informed_days_before": 0
+        }
+      }
+    },
+    {
+      "source_id": "SRC-flight-02",
+      "kind": "ops_api",
+      "endpoint": "/flights/AK412?date=2026-08-04",
+      "retrieved_at": "2026-09-14T17:58:33Z",
+      "evidence": {
+        "flight_no": "AK412",
+        "date": "2026-08-04",
+        "origin": "LHR",
+        "destination": "BCN",
+        "distance_km": 1146,
+        "scheduled_departure": "2026-08-04T07:20:00Z",
+        "scheduled_arrival": "2026-08-04T10:35:00Z",
+        "status": "CANCELLED",
+        "cause_code": "WEATHER",
+        "cause_note": "Thunderstorm activity over BCN terminal area; airport ground stop 06:10-11:40 local.",
+        "departure_delay_minutes": null
+      }
+    },
+    {
+      "source_id": "SRC-entitlement-03",
+      "kind": "ops_api",
+      "endpoint": "/entitlements/calculate?booking_ref=AER-4K2P9X",
+      "retrieved_at": "2026-09-14T17:58:33Z",
+      "evidence": {
+        "booking_ref": "AER-4K2P9X",
+        "status": "ASSESSED",
+        "authoritative": true,
+        "policy_version": "APCP-2026-04 v11.3",
+        "note": "S10.2: where this service returns a figure, that figure is the amount owed. It takes precedence over a figure derived by reading the policy text.",
+        "journey": {
+          "origin": "LHR",
+          "final_destination": "BCN",
+          "great_circle_distance_km": 1146,
+          "band": "A",
+          "affected_flight": "AK412:2026-08-04",
+          "cause_code": "WEATHER",
+          "cause_is_extraordinary": true,
+          "flight_status": "CANCELLED",
+          "departure_delay_minutes": null,
+          "arrival_delay_minutes_at_final_destination": null,
+          "rerouted_onto": null
+        },
+        "compensation": {
+          "amount_gbp": 0.0,
+          "status": "NOT_PAYABLE",
+          "reasoning": [
+            "S1.3: great-circle distance 1146 km, therefore Band A.",
+            "S3: operational record shows cause_code=WEATHER, which is an extraordinary circumstance (S3.2).",
+            "S5.1(b): cause is extraordinary, therefore no compensation is payable. Duty of care under S4 is unaffected."
+          ]
+        },
+        "duty_of_care": {
+          "triggered": true,
+          "basis": "S4.1: flight cancelled, care owed immediately.",
+          "note": "S4 care is owed regardless of cause, including extraordinary circumstances (S4.3).",
+          "entitlements": [
+            {
+              "type": "meals_refreshments",
+              "cap_gbp": 30.0,
+              "per": "passenger per 6 hours"
+            },
+            {
+              "type": "communication",
+              "cap": "two calls or equivalent"
+            },
+            {
+              "type": "hotel",
+              "cap_gbp": 180.0,
+              "per": "room per night",
+              "max_nights": 3,
+              "note": "Subject to station allocation, S4.5."
+            },
+            {
+              "type": "transport",
+              "cap_gbp": 45.0,
+              "per": "journey"
+            }
+          ]
+        },
+        "passengers": [
+          {
+            "passenger_id": "P1",
+            "name": "Priya Raghunathan",
+            "passenger_type": "ADULT",
+            "compensation_gbp": 0.0,
+            "compensation_status": "NOT_PAYABLE",
+            "downgrade_reimbursement_gbp": 0.0,
+            "downgrade_reasoning": [],
+            "flags": [],
+            "total_payable_gbp": 0.0
+          }
+        ],
+        "total_payable_gbp": 0.0
+      }
+    },
+    {
+      "source_id": "SRC-customer-04",
+      "kind": "ops_api",
+      "endpoint": "/customers/CUS-10001/history",
+      "retrieved_at": "2026-09-14T17:58:33Z",
+      "evidence": {
+        "customer_id": "CUS-10001",
+        "tier": "SILVER",
+        "flags": [],
+        "history": []
+      }
+    },
+    {
+      "source_id": "SRC-availability-05",
+      "kind": "ops_api",
+      "endpoint": "/flights/availability?booking_ref=AER-4K2P9X&date=2026-08-04&from=LHR&page=1&page_size=100&to=BCN",
+      "retrieved_at": "2026-09-14T17:58:35Z",
+      "evidence": {
+        "query": {
+          "from": "LHR",
+          "to": "BCN",
+          "date": "2026-08-04",
+          "after": null,
+          "booking_ref": "AER-4K2P9X",
+          "carrier_scope": "own"
+        },
+        "total_results": 74,
+        "total_pages": 1,
+        "sample": [
+          {
+            "option_id": "OPT-B61D4A61B1",
+            "flight_no": "AK671",
+            "operated_by": "Aerlink",
+            "origin": "LHR",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "05:25",
+            "arrival_local": "07:30",
+            "cabin": "ECONOMY",
+            "seats_available": 4,
+            "fare_gbp": 280.49,
+            "arrival_delay_vs_original_minutes": -185
+          },
+          {
+            "option_id": "OPT-9F67537F69",
+            "flight_no": "AK549",
+            "operated_by": "Aerlink",
+            "origin": "LHR",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "05:30",
+            "arrival_local": "07:52",
+            "cabin": "ECONOMY",
+            "seats_available": 6,
+            "fare_gbp": 289.45,
+            "arrival_delay_vs_original_minutes": -163
+          },
+          {
+            "option_id": "OPT-C147B271D2",
+            "flight_no": "AK529",
+            "operated_by": "Aerlink",
+            "origin": "LHR",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "05:50",
+            "arrival_local": "07:55",
+            "cabin": "ECONOMY",
+            "seats_available": 6,
+            "fare_gbp": 14.32,
+            "arrival_delay_vs_original_minutes": -160
+          }
+        ]
+      }
+    },
+    {
+      "source_id": "SRC-availability-06",
+      "kind": "ops_api",
+      "endpoint": "/flights/availability?booking_ref=AER-4K2P9X&date=2026-08-04&from=LGW&page=1&page_size=100&to=BCN",
+      "retrieved_at": "2026-09-14T17:58:37Z",
+      "evidence": {
+        "query": {
+          "from": "LGW",
+          "to": "BCN",
+          "date": "2026-08-04",
+          "after": null,
+          "booking_ref": "AER-4K2P9X",
+          "carrier_scope": "own"
+        },
+        "total_results": 73,
+        "total_pages": 1,
+        "sample": [
+          {
+            "option_id": "OPT-B4F48D7936",
+            "flight_no": "AK355",
+            "operated_by": "Aerlink",
+            "origin": "LGW",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "05:25",
+            "arrival_local": "07:10",
+            "cabin": "ECONOMY",
+            "seats_available": 0,
+            "fare_gbp": 224.51,
+            "arrival_delay_vs_original_minutes": -205
+          },
+          {
+            "option_id": "OPT-301B2A47D7",
+            "flight_no": "AK652",
+            "operated_by": "Aerlink",
+            "origin": "LGW",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "05:35",
+            "arrival_local": "07:31",
+            "cabin": "ECONOMY",
+            "seats_available": 7,
+            "fare_gbp": 101.43,
+            "arrival_delay_vs_original_minutes": -184
+          },
+          {
+            "option_id": "OPT-5426B5557A",
+            "flight_no": "AK782",
+            "operated_by": "Aerlink",
+            "origin": "LGW",
+            "destination": "BCN",
+            "date": "2026-08-04",
+            "departure_local": "05:35",
+            "arrival_local": "07:20",
+            "cabin": "ECONOMY",
+            "seats_available": 6,
+            "fare_gbp": 241.03,
+            "arrival_delay_vs_original_minutes": -195
+          }
+        ]
+      }
+    }
+  ],
+  "actions": [
+    {
+      "action_id": "ACT-01-rebooking",
+      "action_type": "rebooking",
+      "state": "blocked",
+      "booking_ref": "AER-4K2P9X",
+      "passenger_ids": [
+        "P1"
+      ],
+      "amount": {
+        "amount_minor": 5224,
+        "currency": "GBP"
+      },
+      "itinerary": {
+        "option_id": "OPT-418287FFBA",
+        "flight_no": "AK275",
+        "operated_by": "Aerlink",
+        "origin": "LGW",
+        "destination": "BCN",
+        "date": "2026-08-04",
+        "departure_local": "08:15",
+        "arrival_local": "10:10",
+        "cabin": "ECONOMY",
+        "seats_available": 9,
+        "fare_gbp": 52.24,
+        "arrival_delay_vs_original_minutes": -25
+      },
+      "policy_basis": [
+        "S12.1, S6.3",
+        "S6.1(a)",
+        "S6.2",
+        "S6.4"
+      ],
+      "preconditions_checked": {
+        "authority": {
+          "allowed_at_representative_level": false,
+          "required_level": "supervisor",
+          "clause": "S12.1, S6.3",
+          "reason": "The option carries an additional fare payable of GBP 52.24 (API.md S3). S12.1 places 're-route on own carrier, cabin change or fare difference' at supervisor level, and S6.3 grants a representative authority only where there is no additional cost to the passenger."
+        },
+        "origin_searched": "LGW",
+        "searches": [
+          {
+            "route": "LHR-BCN",
+            "date": "2026-08-04",
+            "total_options": 74,
+            "candidate_set_truncated": false,
+            "passing_all_constraints": 38,
+            "rejection_counts": {
+              "not_own_carrier": 0,
+              "wrong_cabin": 16,
+              "not_enough_seats": 7,
+              "arrives_after_deadline": 1,
+              "departs_too_early": 0,
+              "already_departed": 12,
+              "unparseable_times": 0
+            },
+            "options_with_no_additional_fare": 0
+          },
+          {
+            "route": "LGW-BCN",
+            "date": "2026-08-04",
+            "total_options": 73,
+            "candidate_set_truncated": false,
+            "passing_all_constraints": 44,
+            "rejection_counts": {
+              "not_own_carrier": 0,
+              "wrong_cabin": 8,
+              "not_enough_seats": 5,
+              "arrives_after_deadline": 4,
+              "departs_too_early": 0,
+              "already_departed": 12,
+              "unparseable_times": 0
+            },
+            "options_with_no_additional_fare": 0
+          }
+        ],
+        "seats_available_at_selection": 9,
+        "additional_fare_payable_gbp": "52.24",
+        "passengers_needing_seats": 1,
+        "cabin_booked": "ECONOMY",
+        "deadline_applied_destination_local": "2026-08-04T23:59:00"
+      },
+      "consent_basis": "These passengers have expressed a preference under S6.4: they asked for the earliest available service and named 2026-08-04 as the travel date and set a deadline of 2026-08-04T23:59 at the destination. Quoted: 'I still need to get to Barcelona. I have a conference and I need to be there by this evening at the latest, so please could you put me on the next available fli'",
+      "blocked_reason": "The option carries an additional fare payable of GBP 52.24 (API.md S3). S12.1 places 're-route on own carrier, cabin change or fare difference' at supervisor level, and S6.3 grants a representative authority only where there is no additional cost to the passenger.",
+      "fingerprint": null,
+      "journal_key": null,
+      "request_summary": null,
+      "response_status": null,
+      "returned_ids": null,
+      "verification": null,
+      "error": null
+    },
+    {
+      "action_id": "ACT-esc-01-supervisor",
+      "action_type": "escalation",
+      "state": "skipped_duplicate",
+      "booking_ref": "AER-4K2P9X",
+      "passenger_ids": [],
+      "amount": null,
+      "itinerary": null,
+      "policy_basis": [
+        "S12.5",
+        "S12.1, S6.3; S4.4 (no operations API endpoint exists)"
+      ],
+      "preconditions_checked": {
+        "referral_completeness": "S12.5 requires what the passenger asked for, what the record shows, the recommended outcome, the blocking condition, and what the referring party must decide. All five are present."
+      },
+      "consent_basis": null,
+      "blocked_reason": "An equivalent action already exists in the operations API's own write log (ESC-00001). S15.3 and S16 forbid actioning a remedy twice.",
+      "fingerprint": "7b62b6950840683110064a0e4d9815544dc95f8a2120bad40b01e5f13daa19f1",
+      "journal_key": null,
+      "request_summary": null,
+      "response_status": null,
+      "returned_ids": {
+        "existing": [
+          "ESC-00001"
+        ]
+      },
+      "verification": "Confirmed against GET /_audit.",
+      "error": null
+    }
+  ],
+  "uncertainties": [
+    {
+      "issue": "Duty-of-care reimbursement against receipts has no operations API endpoint.",
+      "effect_on_decision": "The claim is referred in full rather than paid through another mechanism."
+    }
+  ],
+  "human_handover": {
+    "required": true,
+    "reason": "S12.1, S6.3; S4.4 (no operations API endpoint exists)",
+    "escalation_ids": [
+      "ESC-00001"
+    ],
+    "api_handover_succeeded": true,
+    "next_steps": [
+      "Authorise the re-routing.",
+      "Reimburse against receipts within the S4.2 caps, or explain why not."
+    ]
+  },
+  "passenger_response": {
+    "language": "en",
+    "subject": "Your disrupted flight AK412",
+    "body": "Dear Priya Raghunathan,\n\nYour flight AK412 on 2026-08-04 was cancelled because of thunderstorm activity over the BCN terminal area and an airport ground stop from 06:10 to 11:40 local.\n\nWe have found you a seat but we have not confirmed it. It carries an additional fare, which someone senior has to approve before we can book it. They have the details.\n\nWe have not repaid what you spent. Costs you paid yourself are reimbursed against your receipts, and that has to be handled by a colleague rather than at this desk. Keep the receipts.\n\nYour compensation calculation differs from your own figure. The great-circle distance is 1146 km, which places the flight in Band A. The operational record shows the cause as WEATHER, an extraordinary circumstance. Because the cause was extraordinary, no compensation is payable. The arrival delay at the final destination is not recorded. Your duty of care is unaffected, so meals, refreshments, communication, hotel accommodation and transport remain covered where applicable.",
+    "status": "draft",
+    "note": "Draft only. The operations API exposes no send operation, so this text has not reached the passenger.",
+    "generated_by": "model"
+  },
+  "usage": {
+    "model": "gpt-5.6-luna",
+    "price_source": "https://developers.openai.com/api/docs/pricing",
+    "price_verified_on": "2026-09-14",
+    "prices_usd_per_mtok": {
+      "input": "0.20",
+      "cached_input": "0.02",
+      "cache_write": "0.2500",
+      "output": "1.20"
+    },
+    "calls": [
+      {
+        "purpose": "extraction",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_0d9eccbe974d01b7016aa835c53ab887d1a7f41f10ade7ee76",
+        "input_tokens": 2971,
+        "cached_input_tokens": 2968,
+        "cache_write_tokens": 0,
+        "output_tokens": 726,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000931",
+        "reserved_upper_bound_usd": "0.003718",
+        "reservation_resolved": true,
+        "note": null
+      },
+      {
+        "purpose": "narration",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_0e04467153730900016aa835cff2bc87d1b2a04e131bbd65be",
+        "input_tokens": 1975,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 1972,
+        "output_tokens": 241,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000783",
+        "reserved_upper_bound_usd": "0.002297",
+        "reservation_resolved": true,
+        "note": null
+      }
+    ],
+    "case_calculated_cost_usd": "0.001714",
+    "case_unresolved_reservation_upper_bound_usd": "0",
+    "note": "Cost is derived from the usage the API reported, priced from the table above. Cached input and reasoning tokens are subsets of input and output tokens respectively and are each counted once. This is a calculated figure, not a billing statement from OpenAI."
+  },
+  "errors": []
+}

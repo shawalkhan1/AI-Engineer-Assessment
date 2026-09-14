@@ -1,42 +1,14 @@
-# Transcripts
+# Actual assistant sessions
 
-The brief requires the actual AI assistant sessions, not a summary. This was built in
-**one Claude Code session** (Opus). There is no other session and no other tool.
+This folder contains the actual Claude Code build session and Codex adversarial audit sessions, including delegated reviews and interrupted/resumed work. They are JSONL exports, not summaries.
 
-## The export step — this needs your hands
+`export-manifest.json` records every source filename, exported record count, credential replacements, checksum and snapshot cutoff. Only credentials and matching test credentials were replaced with `[REDACTED]`; no personal sections or substantive conversation were cut. Original logs were not modified.
 
-1. In the Claude Code session, run:
+The current conversation can continue after a snapshot. Immediately before submission, run:
 
-   ```
-   /export
-   ```
+```sh
+python tools/export_transcripts.py
+python tools/check_transcript.py transcripts/
+```
 
-   Save the result here as `transcripts/claude-code-session.md`.
-   (Alternatively copy the session log out of
-   `~/.claude/projects/<project>/<session-id>.jsonl`.)
-
-2. **Check it for the API key before sending anything:**
-
-   ```bash
-   python tools/check_transcript.py transcripts/
-   ```
-
-   It reports file and line for anything key-shaped and exits non-zero. It does not
-   edit the file — replace each value with `[REDACTED]` yourself and run it again.
-   `.env` was read during the session, so this matters.
-
-3. Read it for anything personal and unrelated. The brief says you may cut that, as
-   long as you say you did.
-
-## What the session contains
-
-Reading the brief, the API reference and the policy; two blocking questions raised
-before any code was written; the implementation; the test suite; seven sweeps and the
-defects each surfaced; and a corrective audit that reversed two policy readings I had
-recorded as settled, found a live double-payment path, and reduced the system's
-executed actions from nine to one. Section 9 of `DECISIONS.md` says where the assistant
-was overridden, where it was left to run, and what it got wrong.
-
-The audit is the part worth reading. The first version of this system paid £855.00 and
-re-booked five passengers on authority it did not have, and every automated check
-passed.
+The scanner decodes JSONL text rather than treating escaped newlines or source-code variable references as keys. It also scans known token shapes and credential assignments without printing their values. Section 9 of DECISIONS.md explains the roles of the assistants.

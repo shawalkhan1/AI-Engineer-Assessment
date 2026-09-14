@@ -1,30 +1,18 @@
+# Local credentials, runtime and generated files
 .env
-__pycache__/
-*.pyc
 .venv/
 venv/
-node_modules/
-.DS_Store
-
-# --- added by the disruption desk implementation ---
-.venv/
 state/
-# Scratch runs are ignored, but the run output is a required deliverable, so the
-# directories that hold it are kept.
-artifacts/*
-!artifacts/ACTION-REVIEW.md
-!artifacts/EXPECTATIONS.md
-!artifacts/full-run/
-!artifacts/repeat-run-no-duplicates/
-!artifacts/unseen-001/
-!artifacts/dry-run/
-# Superseded runs are kept deliberately: each one contains a real defect, and the
-# checks are only credible if they can still be shown failing on known-bad input.
-!artifacts/superseded-sweep-1/
-!artifacts/superseded-sweep-6-authority-defect/
-!artifacts/superseded-sweep-9-departed-options/
-!artifacts/superseded-sweep-10-reply-claim/
-!artifacts/superseded-sweep-11-referral-duplication/
-!artifacts/superseded-repeat-11-referral-duplication/
+__pycache__/
+*.pyc
 .pytest_cache/
 *.sqlite3
+*.sqlite3-shm
+*.sqlite3-wal
+.DS_Store
+
+# Keep only submitted verification evidence
+artifacts/*
+!artifacts/audit-verification/
+!artifacts/ACTION-REVIEW.md
+!artifacts/model-usage-ledger.json

@@ -232,6 +232,50 @@ def test_a_clear_eligible_case_is_assessed_exactly_and_then_referred(
                for e in server.writes["escalations"])
 
 
+def test_execution_precondition_failure_reaches_a_human(
+    tmp_path, ops, journal, config, server, monkeypatch
+):
+    original_allocation = ops.hotel_allocation
+    reads = 0
+
+    def hotel_sells_out(station, night):
+        nonlocal reads
+        reads += 1
+        result = original_allocation(station, night)
+        return dict(result, rooms_remaining=0) if reads > 1 else result
+
+    monkeypatch.setattr(ops, "hotel_allocation", hotel_sells_out)
+    outcome = run(
+        tmp_path, ops, journal, config,
+        text=HOTEL_CASE_TEXT, meta=HOTEL_CASE_META,
+        extraction_result=hotel_extraction(),
+    )
+    voucher = next(
+        a for a in outcome.record.actions if a.action_type == ActionType.HOTEL_VOUCHER
+    )
+    assert voucher.state == ActionState.BLOCKED
+    assert server.writes["hotel_vouchers"] == []
+    assert outcome.record.human_handover.required
+    assert outcome.record.human_handover.api_handover_succeeded
+    assert any("exhausted" in h["summary"] for h in server.writes["escalations"])
+
+
+def test_planner_referral_is_not_repeated_as_an_execution_failure(
+    tmp_path, ops, journal, config, server
+):
+    outcome = run(
+        tmp_path, ops, journal, config,
+        text=CLEAR_CASE_TEXT, meta=CLEAR_CASE_META,
+        extraction_result=extraction([
+            request(RequestType.COMPENSATION, "Please pay me what I am owed")
+        ]),
+    )
+    assert outcome.record.human_handover.api_handover_succeeded
+    assert not any(
+        "stopped at execution" in h["summary"] for h in server.writes["escalations"]
+    )
+
+
 def test_the_record_carries_every_required_category(tmp_path, ops, journal, config):
     outcome = run(
         tmp_path,
@@ -611,7 +655,7 @@ def test_a_case_works_without_any_metadata(tmp_path, ops, journal, config):
 
 
 def test_a_message_with_no_usable_date_is_handed_over_not_guessed(
-    tmp_path, ops, journal, config
+    tmp_path, ops, journal, config, server
 ):
     """The host clock is never used as the incident date."""
     path = tmp_path / "undated.txt"
@@ -626,8 +670,56 @@ def test_a_message_with_no_usable_date_is_handed_over_not_guessed(
         run_id="run-test",
         dry_run=False,
     )
-    assert outcome.record.status == CaseStatus.FAILED
+    assert outcome.record.status == CaseStatus.HANDED_OVER
     assert any(e["stage"] == "ingest" for e in outcome.record.errors)
+    assert outcome.record.human_handover.api_handover_succeeded
+    assert len(server.writes["escalations"]) == 1
+    assert server.writes["escalations"][0]["queue"] == "GENERAL"
+    assert outcome.record.passenger_response["generated_by"] == "deterministic template"
+
+
+def test_exception_after_success_preserves_the_action_and_raises_handover(
+    tmp_path, ops, journal, config, server, monkeypatch
+):
+    from aerlink.executor import Executor
+
+    original_execute = Executor.execute
+    calls = 0
+
+    def crash_after_first_pass(self, proposals, inventory):
+        nonlocal calls
+        calls += 1
+        report = original_execute(self, proposals, inventory)
+        if calls == 1:
+            raise RuntimeError("later processing failed after a committed voucher")
+        return report
+
+    monkeypatch.setattr(Executor, "execute", crash_after_first_pass)
+    outcome = run(
+        tmp_path, ops, journal, config,
+        text=HOTEL_CASE_TEXT, meta=HOTEL_CASE_META,
+        extraction_result=hotel_extraction(),
+    )
+    successful = [
+        a for a in outcome.record.actions
+        if a.action_type == ActionType.HOTEL_VOUCHER and a.state == ActionState.SUCCEEDED
+    ]
+    assert len(successful) == 1
+    assert len(server.writes["hotel_vouchers"]) == 1
+    assert successful[0].returned_ids["voucher_id"] == server.writes["hotel_vouchers"][0]["voucher_id"]
+    assert outcome.record.human_handover.api_handover_succeeded
+    assert any("stopped unexpectedly" in h["summary"] for h in server.writes["escalations"])
+
+
+@pytest.mark.parametrize("name,value", [
+    ("from", ["ada@example.test"]),
+    ("received_at", 20260803),
+    ("case_id", {"id": "unsafe"}),
+])
+def test_metadata_identity_and_time_fields_must_be_strings(tmp_path, name, value):
+    directory = write_case(tmp_path, "bad-metadata-types", CLEAR_CASE_TEXT, {name: value})
+    with pytest.raises(CaseInputError, match="must be a string"):
+        load_case_dir(directory)
 
 
 @pytest.mark.parametrize(

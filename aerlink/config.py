@@ -59,6 +59,11 @@ class ModelPrice:
     is_reasoning_model: bool
     reasoning_effort: str | None
 
+    @property
+    def cache_write_rate(self) -> Decimal:
+        # https://developers.openai.com/api/docs/guides/prompt-caching
+        return self.input_usd_per_mtok * (Decimal("1.25") if self.model.startswith("gpt-5.6") else Decimal("1"))
+
 
 VERIFIED_MODEL_PRICES: dict[str, ModelPrice] = {
     "gpt-5.6-luna": ModelPrice(
@@ -69,7 +74,7 @@ VERIFIED_MODEL_PRICES: dict[str, ModelPrice] = {
         source_url="https://developers.openai.com/api/docs/pricing",
         # Read 2026-09-13 and re-verified against the same page after the corrective
         # audit; `models.retrieve` confirms the id is live for the key in use.
-        verified_on="2026-09-13 (re-verified)",
+        verified_on="2026-09-14",
         is_reasoning_model=True,
         # "none" is accepted by this model (developers.openai.com/api/docs/guides/
         # reasoning). It keeps reasoning tokens at or near zero; max_output_tokens
@@ -85,7 +90,7 @@ VERIFIED_MODEL_PRICES: dict[str, ModelPrice] = {
         source_url="https://developers.openai.com/api/docs/pricing",
         verified_on="2026-09-13",
         is_reasoning_model=True,
-        reasoning_effort="none",
+        reasoning_effort="minimal",
     ),
     "gpt-5-mini": ModelPrice(
         model="gpt-5-mini",
@@ -95,7 +100,7 @@ VERIFIED_MODEL_PRICES: dict[str, ModelPrice] = {
         source_url="https://developers.openai.com/api/docs/pricing",
         verified_on="2026-09-13",
         is_reasoning_model=True,
-        reasoning_effort="none",
+        reasoning_effort="minimal",
     ),
 }
 

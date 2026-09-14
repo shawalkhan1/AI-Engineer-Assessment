@@ -21,6 +21,8 @@ call. The authoritative figure is always the usage the API returns.
 
 from __future__ import annotations
 
+import json
+import time
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import Any, TypeVar
@@ -29,6 +31,7 @@ from pydantic import BaseModel, ValidationError
 
 from .config import (
     DEV_SESSION_CEILING_USD,
+    CASE_TIMEOUT_S,
     MAX_INPUT_TOKENS_PER_CALL,
     MAX_MODEL_REQUESTS_PER_CASE,
     REQUEST_TIMEOUT_S,
@@ -88,6 +91,7 @@ class LLMClient:
         self.case_usage: list[dict[str, Any]] = []
         self._encoding = None
         self._model_verified = False
+        self.deadline = time.monotonic() + CASE_TIMEOUT_S
 
         if client is not None:
             self._client = client
@@ -108,6 +112,7 @@ class LLMClient:
         self.case_id = case_id
         self.calls_this_case = 0
         self.case_usage = []
+        self.deadline = time.monotonic() + CASE_TIMEOUT_S
 
     def verify_model_available(self) -> dict[str, Any]:
         """Confirm the configured model exists for this key before spending on it."""
@@ -138,7 +143,7 @@ class LLMClient:
         )
         million = Decimal(1_000_000)
         return (
-            padded_input * self.price.input_usd_per_mtok / million
+            padded_input * self.price.cache_write_rate / million
             + Decimal(max_output_tokens) * self.price.output_usd_per_mtok / million
         ).quantize(Decimal("0.000001"))
 
@@ -156,16 +161,21 @@ class LLMClient:
         reasoning = (
             int(getattr(details_out, "reasoning_tokens", 0) or 0) if details_out else 0
         )
-        uncached = max(0, input_tokens - cached)
+        cache_writes = int(getattr(details_in, "cache_write_tokens", 0) or 0) if details_in else 0
+        if min(input_tokens, output_tokens, cached, cache_writes, reasoning) < 0 or cached + cache_writes > input_tokens or reasoning > output_tokens:
+            raise ModelOutputInvalid("API returned inconsistent token accounting")
+        uncached = input_tokens - cached - cache_writes
         million = Decimal(1_000_000)
         cost = (
             Decimal(uncached) * self.price.input_usd_per_mtok / million
             + Decimal(cached) * self.price.cached_input_usd_per_mtok / million
+            + Decimal(cache_writes) * self.price.cache_write_rate / million
             + Decimal(output_tokens) * self.price.output_usd_per_mtok / million
         ).quantize(Decimal("0.000001"))
         counts = {
             "input_tokens": input_tokens,
             "cached_input_tokens": cached,
+            "cache_write_tokens": cache_writes,
             "output_tokens": output_tokens,
             "reasoning_tokens": reasoning,
         }
@@ -211,9 +221,10 @@ class LLMClient:
                 )
             )
 
+        schema_tokens = self.estimate_tokens(json.dumps(text_format.model_json_schema()))
         estimated = self.estimate_tokens(instructions) + self.estimate_tokens(
             user_content
-        )
+        ) + schema_tokens + 64
         if estimated > MAX_INPUT_TOKENS_PER_CALL:
             raise BudgetExhausted(
                 "Estimated input of {} tokens exceeds the per-call cap of {}.".format(
@@ -231,10 +242,22 @@ class LLMClient:
                 if self.calls_this_case >= MAX_MODEL_REQUESTS_PER_CASE:
                     break
             content = attempt_inputs[-1]
-            estimated = self.estimate_tokens(instructions) + self.estimate_tokens(content)
+            estimated = self.estimate_tokens(instructions) + self.estimate_tokens(content) + schema_tokens + 64
+            if estimated > MAX_INPUT_TOKENS_PER_CALL:
+                raise BudgetExhausted("Estimated input exceeds the per-call cap, including schema/repair.")
             reservation = self.reserve_for(estimated, max_output_tokens)
+            if time.monotonic() >= self.deadline:
+                raise BudgetExhausted("Case deadline reached; no further model request sent.")
             self._admit(reservation, purpose)
 
+            usage_id = self.journal.record_usage(
+                run_id=self.run_id, case_id=self.case_id,
+                purpose=purpose if attempt == 0 else purpose + "_repair",
+                model=self.config.openai_model, request_id=None,
+                input_tokens=None, cached_tokens=None, output_tokens=None,
+                reasoning_tokens=None, cost_usd=None, reserved_usd=reservation,
+                resolved=False,
+            )
             self.calls_this_case += 1
             usage_row: dict[str, Any] = {
                 "purpose": purpose if attempt == 0 else purpose + "_repair",
@@ -242,6 +265,7 @@ class LLMClient:
                 "request_id": None,
                 "input_tokens": None,
                 "cached_input_tokens": None,
+                "cache_write_tokens": None,
                 "output_tokens": None,
                 "reasoning_tokens": None,
                 "calculated_cost_usd": None,
@@ -257,7 +281,7 @@ class LLMClient:
                 "text_format": text_format,
                 "max_output_tokens": max_output_tokens,
                 "store": False,
-                "timeout": REQUEST_TIMEOUT_S,
+                "timeout": max(0.001, min(REQUEST_TIMEOUT_S, self.deadline - time.monotonic())),
             }
             if self.price.is_reasoning_model and self.price.reasoning_effort:
                 kwargs["reasoning"] = {"effort": self.price.reasoning_effort}
@@ -270,7 +294,7 @@ class LLMClient:
                     "as an unresolved upper bound: "
                     + redact(str(exc), self.config.openai_api_key)[:300]
                 )
-                self._persist_usage(usage_row, reservation, resolved=False)
+                self._persist_usage(usage_row, usage_id, resolved=False)
                 last_error = exc
                 raise ModelOutputInvalid(
                     redact(str(exc), self.config.openai_api_key)[:300]
@@ -283,13 +307,13 @@ class LLMClient:
                 usage_row["calculated_cost_usd"] = str(cost)
                 usage_row["reservation_resolved"] = True
                 usage_row["request_id"] = getattr(response, "id", None)
-                self._persist_usage(usage_row, reservation, resolved=True, cost=cost)
+                self._persist_usage(usage_row, usage_id, resolved=True, cost=cost)
             else:
                 usage_row["note"] = (
                     "API returned no usage object; reservation kept as an unresolved "
                     "upper bound."
                 )
-                self._persist_usage(usage_row, reservation, resolved=False)
+                self._persist_usage(usage_row, usage_id, resolved=False)
 
             status = getattr(response, "status", None)
             if status == "incomplete":
@@ -344,24 +368,21 @@ class LLMClient:
     def _persist_usage(
         self,
         row: dict[str, Any],
-        reservation: Decimal,
+        usage_id: int,
         *,
         resolved: bool,
         cost: Decimal | None = None,
     ) -> None:
         self.case_usage.append(dict(row))
-        self.journal.record_usage(
-            run_id=self.run_id,
-            case_id=self.case_id,
-            purpose=row["purpose"],
-            model=row["model"],
+        self.journal.settle_usage(
+            usage_id,
             request_id=row["request_id"],
             input_tokens=row["input_tokens"],
             cached_tokens=row["cached_input_tokens"],
+            cache_write_tokens=row.get("cache_write_tokens"),
             output_tokens=row["output_tokens"],
             reasoning_tokens=row["reasoning_tokens"],
             cost_usd=cost,
-            reserved_usd=reservation,
             resolved=resolved,
         )
 

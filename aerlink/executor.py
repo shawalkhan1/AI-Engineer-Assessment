@@ -104,7 +104,15 @@ class Executor:
         """
         if self._audit_cache is None or refresh:
             try:
-                self._audit_cache = self.ops.audit()
+                audit = self.ops.audit()
+                if not isinstance(audit, dict) or not isinstance(audit.get("writes"), dict):
+                    raise ValueError("operations audit response has no usable write log")
+                if any(
+                    not isinstance(audit["writes"].get(name), list)
+                    for name in ("rebookings", "refunds", "payments", "hotel_vouchers", "escalations")
+                ):
+                    raise ValueError("operations audit response has incomplete write collections")
+                self._audit_cache = audit
                 self._audit_available = True
             except Exception as exc:  # noqa: BLE001 - recorded, never fatal
                 self.report.errors.append(
@@ -113,9 +121,9 @@ class Executor:
                         "error": str(exc)[:300],
                         "effect": (
                             "The server's write log could not be read. Duplicate "
-                            "detection falls back to the local journal, and a local "
-                            "record of success is treated as authoritative rather "
-                            "than being second-guessed."
+                            "detection cannot establish that an action is new. "
+                            "Booking and money writes are blocked; a human handover "
+                            "may still be raised."
                         ),
                     }
                 )
@@ -198,6 +206,38 @@ class Executor:
                     "reason": "the option's cabin changed since planning",
                     "cabin_now": row.get("cabin"),
                 }
+            # A stable option_id does not guarantee stable commercial terms or
+            # times. The original authority and passenger consent apply to the
+            # option we assessed, so any material change needs a fresh decision.
+            body = proposal.request_body or {}
+            itinerary = proposal.itinerary or {}
+            expected = {
+                "flight_no": body.get("flight_no"),
+                "date": body.get("date"),
+                "origin": spec.get("origin"),
+                "destination": spec.get("destination"),
+                "operated_by": itinerary.get("operated_by", "Aerlink"),
+                **{
+                    name: itinerary[name]
+                    for name in ("departure_local", "arrival_local", "arrival_delay_vs_original_minutes")
+                    if itinerary.get(name) is not None
+                },
+            }
+            for name, value in expected.items():
+                if value is not None and row.get(name) != value:
+                    return False, {
+                        "refreshed": True,
+                        "reason": "the option's {} changed since planning".format(name),
+                        "planned": value,
+                        "current": row.get(name),
+                    }
+            if _pence(row.get("fare_gbp")) != _pence(body.get("fare_gbp")):
+                return False, {
+                    "refreshed": True,
+                    "reason": "the option's additional fare changed since planning",
+                    "fare_gbp_planned": body.get("fare_gbp"),
+                    "fare_gbp_now": row.get("fare_gbp"),
+                }
             return True, {
                 "refreshed": True,
                 "seats_available_now": seats,
@@ -219,6 +259,13 @@ class Executor:
                     "reason": "the station allocation was exhausted between planning "
                     "and execution (S4.5)",
                     "rooms_remaining_now": remaining,
+                }
+            if proposal.amount and _pence(allocation.get("rate_gbp")) != proposal.amount.amount_minor:
+                return False, {
+                    "refreshed": True,
+                    "reason": "the hotel rate changed since planning; authority must be reassessed",
+                    "rate_gbp_now": allocation.get("rate_gbp"),
+                    "rate_minor_planned": proposal.amount.amount_minor,
                 }
             return True, {"refreshed": True, "rooms_remaining_now": remaining}
 
@@ -271,9 +318,29 @@ class Executor:
         )
         record.fingerprint = fingerprint
 
+        benefit_keys = benefit_keys_for(
+            ops_base_url=self.config.ops_base_url,
+            action_type=proposal.action_type.value,
+            booking_ref=proposal.booking_ref or "NO-BOOKING",
+            disruption_scope=proposal.disruption_scope,
+            passenger_ids=proposal.passenger_ids,
+            station=(proposal.itinerary or {}).get("station"),
+            night=(proposal.itinerary or {}).get("night"),
+        )
         # --- duplicate detection, server first ---------------------------
         prior = self.journal.find_prior_actions(fingerprint)
         server_matches = self._server_equivalents(proposal)
+        provenance = self.journal.actions_for_booking(
+            self.config.ops_base_url, proposal.booking_ref or "NO-BOOKING")
+        current_keys = set(benefit_keys)
+        by_id = {str(p["returned_id"]): p for p in provenance if p.get("returned_id")}
+        # The API omits disruption IDs on payments/refunds. Equal amounts do not
+        # establish equal events; known different events must not suppress a remedy.
+        money_kinds = {ActionType.COMPENSATION_PAYMENT, ActionType.GOODWILL_PAYMENT, ActionType.REFUND}
+        if proposal.action_type in money_kinds:
+            server_matches = [w for w in server_matches
+                if (p := by_id.get(str(w.get(_ID_FIELD[proposal.action_type]))))
+                and p["fingerprint"] == fingerprint]
         if server_matches:
             record.state = ActionState.SKIPPED_DUPLICATE
             record.blocked_reason = (
@@ -293,16 +360,48 @@ class Executor:
             record.verification = "Confirmed against GET /_audit."
             return record
 
+        if not self._audit_available and proposal.action_type != ActionType.ESCALATION:
+            record.state = ActionState.BLOCKED
+            record.blocked_reason = (
+                "The server's write log could not be read, so we cannot establish "
+                "whether this remedy already exists. A fresh local journal does not "
+                "prove nothing was paid or booked elsewhere. No booking or money "
+                "write is sent until the audit is available or a human reconciles it."
+            )
+            return record
+
+        if proposal.action_type != ActionType.ESCALATION:
+            reset_at = self.journal.last_reset_at(self.config.ops_base_url)
+            from .journal import _parse_ts
+            for prior_row in provenance:
+                stale = reset_at and _parse_ts(prior_row["created_at"]) < _parse_ts(reset_at)
+                if not stale and prior_row["state"] in {"unknown", "attempted"}:
+                    record.state = ActionState.BLOCKED
+                    record.blocked_reason = "A previous booking write has an unsettled outcome in the journal; reconcile before further remedies."
+                    return record
+            collection = audit_collection_for(_POST_PATHS[proposal.action_type])
+            for write in (self._audit_cache or {}).get("writes", {}).get(collection, []):
+                if str(write.get("booking_ref", "")).upper() != str(proposal.booking_ref).upper():
+                    continue
+                if proposal.action_type in {ActionType.COMPENSATION_PAYMENT, ActionType.GOODWILL_PAYMENT}:
+                    expected_type = "COMPENSATION" if proposal.action_type == ActionType.COMPENSATION_PAYMENT else "GOODWILL"
+                    if write.get("type") != expected_type:
+                        continue
+                if proposal.action_type == ActionType.HOTEL_VOUCHER and (
+                    write.get("station") != (proposal.itinerary or {}).get("station") or
+                    write.get("night") != (proposal.itinerary or {}).get("night")):
+                    continue
+                if proposal.action_type in {ActionType.REBOOKING, ActionType.REFUND, ActionType.HOTEL_VOUCHER}:
+                    if write.get("passenger_ids") and not (set(write["passenger_ids"]) & set(proposal.passenger_ids)):
+                        continue
+                linked = by_id.get(str(write.get(_ID_FIELD[proposal.action_type])))
+                if linked and linked["benefit_keys"] and not (current_keys & set(linked["benefit_keys"])):
+                    continue
+                record.state = ActionState.BLOCKED
+                record.blocked_reason = "S12.2: a prior server remedy overlaps these passengers; its amount or event cannot establish a new benefit. Human reconciliation required."
+                return record
+
         # --- benefit already granted? (S12.2, independent of the request) --
-        benefit_keys = benefit_keys_for(
-            ops_base_url=self.config.ops_base_url,
-            action_type=proposal.action_type.value,
-            booking_ref=proposal.booking_ref or "NO-BOOKING",
-            disruption_scope=proposal.disruption_scope,
-            passenger_ids=proposal.passenger_ids,
-            station=(proposal.itinerary or {}).get("station"),
-            night=(proposal.itinerary or {}).get("night"),
-        )
         record.preconditions_checked["benefit_scope_keys"] = benefit_keys
         granted = self.journal.find_benefit_grants(benefit_keys)
         if granted:
@@ -634,6 +733,7 @@ def _matcher_for(proposal: ActionProposal) -> Callable[[dict[str, Any]], bool]:
             same_booking(w)
             and str(w.get("station", "")).upper() == str(params.get("station", "")).upper()
             and w.get("night") == params.get("night")
+            and same_passengers(w)
         )
     if action == ActionType.COMPENSATION_PAYMENT:
         return lambda w: (

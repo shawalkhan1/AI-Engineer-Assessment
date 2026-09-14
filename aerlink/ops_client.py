@@ -29,6 +29,7 @@ import httpx
 
 from .config import (
     MAX_OPS_ATTEMPTS_PER_CASE,
+    CASE_TIMEOUT_S,
     MAX_READ_ATTEMPTS,
     OPS_ATTEMPTS_RESERVED_FOR_HANDOVER,
     REQUEST_TIMEOUT_S,
@@ -120,6 +121,7 @@ class OpsClient:
         self.sources: list[SourceRef] = []
         self.request_log: list[dict[str, Any]] = []
         self._source_seq = 0
+        self.deadline = time.monotonic() + CASE_TIMEOUT_S
 
     # -- lifecycle ---------------------------------------------------------
 
@@ -132,6 +134,7 @@ class OpsClient:
         self.sources = []
         self.request_log = []
         self._source_seq = 0
+        self.deadline = time.monotonic() + CASE_TIMEOUT_S
 
     def attempts_remaining(self, *, reserved: bool = True) -> int:
         limit = self.attempt_limit
@@ -165,12 +168,17 @@ class OpsClient:
         json_body: dict[str, Any] | None = None,
         allow_reserve: bool = False,
     ) -> tuple[int, dict[str, Any]]:
+        if not allow_reserve and time.monotonic() >= self.deadline:
+            raise AttemptBudgetExhausted("Case deadline reached; only recovery handovers are permitted.")
         self._spend_attempt(allow_reserve=allow_reserve)
         self._throttle.wait()
+        if not allow_reserve and time.monotonic() >= self.deadline:
+            raise AttemptBudgetExhausted("Case deadline reached before dispatch; no request sent.")
         started = self._clock()
         try:
             response = self._client.request(
-                method, path, params=params, json=json_body
+                method, path, params=params, json=json_body,
+                timeout=REQUEST_TIMEOUT_S if allow_reserve else max(.001, min(REQUEST_TIMEOUT_S, self.deadline - time.monotonic()))
             )
         except httpx.HTTPError as exc:
             self.request_log.append(
@@ -265,6 +273,10 @@ class OpsClient:
             status, payload = self._request(
                 "POST", path, json_body=body, allow_reserve=allow_reserve
             )
+        except AttemptBudgetExhausted as exc:
+            return WriteOutcome(state="failed", status=None, body=None,
+                error="Not sent: " + str(exc), attempted_at=attempted_at,
+                path=path, request_body=body)
         except OpsError as exc:
             # A structured 4xx means the server rejected it and did not act. A 5xx
             # or 429 could be either, so it is not treated as a clean failure.

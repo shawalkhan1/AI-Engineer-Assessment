@@ -1,0 +1,126 @@
+{
+  "run_id": "run-d9fa66ecba",
+  "dry_run": false,
+  "cases": 1,
+  "statuses": {
+    "handed_over": 1
+  },
+  "status_note": "These are counts of outcomes, not an accuracy score. A case that was correctly handed to a human is a correct outcome, and a resolved case is only correct if the money and the journey were right.",
+  "actions": {
+    "escalation:succeeded": 2
+  },
+  "model_usage": {
+    "calls": 2,
+    "tokens": {
+      "input": 4518,
+      "cached_input": 2597,
+      "cache_write": 1915,
+      "output": 810,
+      "reasoning": 0
+    },
+    "calculated_cost_usd": "0.001504",
+    "unresolved_reservation_upper_bound_usd": "0.000000",
+    "unresolved_calls": 0,
+    "worst_case_total_usd": "0.001504"
+  },
+  "operations_api_reconciliation": {
+    "performed": true,
+    "server_totals": {
+      "money_paid_gbp": 0,
+      "rebookings_confirmed": 0,
+      "hotel_vouchers_issued": 1,
+      "escalations_raised": 22
+    },
+    "ids_we_recorded": [
+      "ESC-00022",
+      "ESC-00023"
+    ],
+    "ids_in_server_audit": [
+      "ESC-00001",
+      "ESC-00002",
+      "ESC-00003",
+      "ESC-00004",
+      "ESC-00005",
+      "ESC-00006",
+      "ESC-00007",
+      "ESC-00008",
+      "ESC-00009",
+      "ESC-00010",
+      "ESC-00011",
+      "ESC-00013",
+      "ESC-00014",
+      "ESC-00015",
+      "ESC-00016",
+      "ESC-00017",
+      "ESC-00018",
+      "ESC-00019",
+      "ESC-00020",
+      "ESC-00021",
+      "ESC-00022",
+      "ESC-00023",
+      "HTL-00012"
+    ],
+    "recorded_but_absent_from_server": [],
+    "in_server_but_not_recorded_by_us": [],
+    "server_writes_predating_this_run": 21,
+    "server_was_reset_for_this_run": false,
+    "money_we_recorded_gbp": "0.00",
+    "money_in_server_audit_gbp": "0",
+    "note": "POST /_reset clears this log, so it is the state since the last reset rather than permanent history."
+  },
+  "configuration": {
+    "ops_base_url": "http://127.0.0.1:50304",
+    "ops_api_key": "set",
+    "openai_api_key": "set",
+    "openai_model": "gpt-5.6-luna",
+    "model_price_source": "https://developers.openai.com/api/docs/pricing",
+    "model_price_verified_on": "2026-09-14",
+    "journal_path": "C:\\Users\\Shawal Latif\\Desktop\\Joblogic_task\\AI-Engineer-Assessment\\state\\journal.sqlite3",
+    "journal_namespace": "audit-unseen",
+    "authority_level": "representative",
+    "notes": []
+  },
+  "notes": [
+    "Model gpt-5.6-luna verified available for this key before any billed call."
+  ],
+  "per_case": [
+    {
+      "case_id": "unseen-audit",
+      "status": "handed_over",
+      "booking_ref": "AER-5Z8Q3F",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "escalation",
+          "state": "succeeded",
+          "amount": null,
+          "ids": {
+            "escalation_id": "ESC-00022",
+            "raised_at": "2026-09-14T18:00:51Z",
+            "status": "OPEN",
+            "queue": "GENERAL"
+          }
+        },
+        {
+          "type": "escalation",
+          "state": "succeeded",
+          "amount": null,
+          "ids": {
+            "escalation_id": "ESC-00023",
+            "raised_at": "2026-09-14T18:00:51Z",
+            "status": "OPEN",
+            "queue": "SUPERVISOR"
+          }
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [
+        "ESC-00022",
+        "ESC-00023"
+      ],
+      "uncertainties": 2,
+      "errors": 0,
+      "cost_usd": "0.001504"
+    }
+  ]
+}

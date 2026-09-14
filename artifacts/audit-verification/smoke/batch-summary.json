@@ -1,0 +1,86 @@
+{
+  "run_id": "run-d5565c4a50",
+  "dry_run": true,
+  "cases": 1,
+  "statuses": {
+    "partially_resolved": 1
+  },
+  "status_note": "These are counts of outcomes, not an accuracy score. A case that was correctly handed to a human is a correct outcome, and a resolved case is only correct if the money and the journey were right.",
+  "actions": {
+    "escalation:would_execute": 2,
+    "hotel_voucher:would_execute": 1,
+    "rebooking:blocked": 1
+  },
+  "model_usage": {
+    "calls": 2,
+    "tokens": {
+      "input": 4958,
+      "cached_input": 0,
+      "cache_write": 4952,
+      "output": 1024,
+      "reasoning": 0
+    },
+    "calculated_cost_usd": "0.002468",
+    "unresolved_reservation_upper_bound_usd": "0.000000",
+    "unresolved_calls": 0,
+    "worst_case_total_usd": "0.002468"
+  },
+  "operations_api_reconciliation": {
+    "performed": false
+  },
+  "configuration": {
+    "ops_base_url": "http://127.0.0.1:50284",
+    "ops_api_key": "set",
+    "openai_api_key": "set",
+    "openai_model": "gpt-5.6-luna",
+    "model_price_source": "https://developers.openai.com/api/docs/pricing",
+    "model_price_verified_on": "2026-09-14",
+    "journal_path": "C:\\Users\\Shawal Latif\\Desktop\\Joblogic_task\\AI-Engineer-Assessment\\state\\journal.sqlite3",
+    "journal_namespace": "audit-smoke",
+    "authority_level": "representative",
+    "notes": []
+  },
+  "notes": [
+    "Model gpt-5.6-luna verified available for this key before any billed call.",
+    "DRY RUN: no operations API write was sent, including handovers. Model calls were still made and still cost money."
+  ],
+  "per_case": [
+    {
+      "case_id": "case-09",
+      "status": "partially_resolved",
+      "booking_ref": "AER-8N4V6J",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "rebooking",
+          "state": "blocked",
+          "amount": "GBP 314.46",
+          "ids": null
+        },
+        {
+          "type": "hotel_voucher",
+          "state": "would_execute",
+          "amount": "GBP 165.00",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.002468"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Audit a completed run: read every record and check what actually happened.
 
-    python tools/inspect_run.py artifacts/full-run
+    python tools/inspect_run.py artifacts/audit-verification/full-run
 
 A run that exits 0 is not evidence that the decisions were right. This reads the
 records the way a reviewer would and asserts the things that would be embarrassing to
@@ -83,27 +83,17 @@ def _departed_before(itinerary: dict | None, case_now: str | None) -> str | None
     in `stations.json` is UTC+1..+4 in August, so local >= UTC and a local clock time
     at or behind the UTC instant has certainly departed.
     """
-    from datetime import datetime
+    from aerlink.timeutil import inventory_departure_utc, parse_date, parse_iso_z
+    if not itinerary or not case_now or not itinerary.get("departure_local"):
+        return None
+    base, now = parse_date(itinerary.get("date")), parse_iso_z(case_now)
+    if base is None or now is None:
+        return "unverifiable date"
+    departure = inventory_departure_utc(itinerary, base)
+    if departure is None:
+        return "unverifiable origin-local departure"
+    return departure.isoformat() if departure <= now else None
 
-    if not itinerary or not case_now:
-        return None
-    departure = itinerary.get("departure_local")
-    flight_date = itinerary.get("date")
-    if not departure or not flight_date:
-        return None
-    match = re.match(r"^(\d{2}):(\d{2})", str(departure))
-    if not match:
-        return None
-    try:
-        now = datetime.fromisoformat(case_now).replace(tzinfo=None)
-        when = datetime.fromisoformat(str(flight_date)[:10]).replace(
-            hour=int(match.group(1)), minute=int(match.group(2))
-        )
-    except ValueError:
-        return None
-    if when <= now:
-        return "{} {}".format(flight_date, departure)
-    return None
 
 
 # Phrases that assert something was actually done for the passenger, and the action
@@ -223,25 +213,26 @@ def main(argv: list[str]) -> int:
     dry_run = any(r.dry_run for r in records)
     ops = None
     audit = None
+    snapshot = out / "ops-audit.json"
     if not dry_run:
         try:
-            ops = OpsClient(load_config(require_openai_key=False))
-            ops.begin_case()
-            snapshot = out / "ops-audit.json"
-            audit = (
-                json.loads(snapshot.read_text(encoding="utf-8"))
-                if snapshot.is_file()
-                else ops.audit()
-            )
-        except Exception as exc:  # noqa: BLE001
-            print("note: operations API unavailable, skipping live checks ({})".format(
-                str(exc)[:120]))
+            if snapshot.is_file():
+                audit = json.loads(snapshot.read_text(encoding="utf-8"))
+                print("Checking the captured API audit snapshot (no live server required).")
+            else:
+                ops = OpsClient(load_config(require_openai_key=False))
+                ops.begin_case()
+                audit = ops.audit()
+        except Exception as exc:
+            problems.append("Operations audit unavailable: required reconciliation could not run ({}).".format(type(exc).__name__))
 
     print("%-11s %-20s %-12s %s" % ("case", "status", "booking", "checks"))
     print("-" * 78)
 
     claimed_ids: set[str] = set()
     for record in records:
+        if record.status.value == "failed":
+            problems.append("{}: case failed".format(record.case_id))
         ident = record.identity_resolution
         notes: list[str] = []
         acted = [
@@ -373,6 +364,25 @@ def main(argv: list[str]) -> int:
             for key in ID_FIELDS
             if row.get(key)
         }
+        by_id = {str(row[key]): row for rows in audit.get("writes", {}).values()
+                 for row in rows for key in ID_FIELDS if row.get(key)}
+        for record in records:
+            for action in record.actions:
+                if action.state.value != "succeeded":
+                    continue
+                for key in ID_FIELDS:
+                    identifier = (action.returned_ids or {}).get(key)
+                    row = by_id.get(str(identifier))
+                    if row is None:
+                        continue
+                    if action.booking_ref and row.get("booking_ref") != action.booking_ref:
+                        problems.append("{}: write {} is on the wrong booking".format(record.case_id, identifier))
+                    if action.action_type.value in {"refund", "compensation_payment", "goodwill_payment"}:
+                        if action.amount != gbp(row.get("amount_gbp")):
+                            problems.append("{}: write {} amount differs from server".format(record.case_id, identifier))
+                    if action.action_type.value in {"refund", "rebooking", "hotel_voucher"}:
+                        if set(action.passenger_ids) != set(row.get("passenger_ids") or []):
+                            problems.append("{}: write {} passengers differ from server".format(record.case_id, identifier))
         missing = claimed_ids - server_ids
         print("writes claimed by records: {}".format(len(claimed_ids)))
         print("writes in the server log : {}".format(len(server_ids)))

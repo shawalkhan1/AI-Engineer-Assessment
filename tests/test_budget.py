@@ -80,6 +80,7 @@ def test_cost_is_derived_from_reported_usage_without_double_counting(config, jou
     assert counts == {
         "input_tokens": 10_000,
         "cached_input_tokens": 4_000,
+        "cache_write_tokens": 0,
         "output_tokens": 2_000,
         "reasoning_tokens": 1_500,
     }

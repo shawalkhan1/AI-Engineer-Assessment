@@ -22,6 +22,7 @@ first match.
 from __future__ import annotations
 
 import re
+from email.parser import Parser
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -82,15 +83,16 @@ def parse_address(value: str | None) -> tuple[str | None, str | None]:
     match = _ADDRESS_RE.match(value)
     if match:
         name = match.group("name").strip().strip('"') or None
-        return name, match.group("email").strip().lower()
+        return name, match.group("email").strip()
     found = _EMAIL_RE.search(value)
     if found:
-        return None, found.group(0).lower()
+        return None, found.group(0)
     return value.strip() or None, None
 
 
 def normalise_phone(value: str | None) -> str:
-    return re.sub(r"[^\d]", "", value or "")
+    digits = re.sub(r"[^\d]", "", value or "")
+    return digits[2:] if digits.startswith("00") else digits
 
 
 def _surname_pool(
@@ -131,7 +133,10 @@ def candidate_refs(extraction: Extraction | None, inbound_text: str) -> list[str
 
     if extraction:
         for ref in extraction.booking_refs:
-            add(ref.value)
+            # A real quote alone does not prove the model copied the reference
+            # correctly. The identifier itself must occur in the raw contact.
+            if ref.value.strip().casefold() in inbound_text.casefold():
+                add(ref.value)
     for match in _REF_CANDIDATE_RE.finditer(inbound_text.upper()):
         add(match.group(0))
     return ordered[:5]
@@ -147,20 +152,30 @@ def resolve_identity(
     display_name, sender_email = parse_address(meta_from)
     if not sender_email:
         # Fall back to the message's own From: header if transport metadata is absent.
-        header = re.search(r"(?im)^from:\s*(.+)$", inbound_text)
-        if header:
-            display_name, sender_email = parse_address(header.group(1))
+        headers = Parser().parsestr(inbound_text, headersonly=True).get_all("From", [])
+        if len(headers) == 1:
+            display_name, sender_email = parse_address(headers[0])
 
     candidates: list[dict[str, Any]] = []
     unresolved: list[str] = []
     surnames = _surname_pool(extraction, display_name)
+    identity_text = (inbound_text + " " + (display_name or "")).casefold()
+    surnames = {name for name in surnames if re.search(
+        r"(?<!\w)" + re.escape(name) + r"(?!\w)", identity_text
+    )}
 
+    # Inspect every supplied reference before choosing a booking. S2.2 prohibits
+    # turning an ambiguous or contradictory contact into the first plausible match.
+    refs = candidate_refs(extraction, inbound_text)
+    ref_matches: list[IdentityResult] = []
+    invalid_reference = False
     # --- S2.1(a): reference plus a matching surname --------------------------
-    for ref in candidate_refs(extraction, inbound_text):
+    for ref in refs:
         try:
             booking = ops.get_booking(ref)
         except OpsError as exc:
             if exc.status == 404:
+                invalid_reference = True
                 candidates.append(
                     {
                         "booking_ref": ref,
@@ -203,9 +218,11 @@ def resolve_identity(
                 unresolved_checks=unresolved,
                 evidence=[s.source_id for s in ops.sources],
             )
-            _apply_third_party_check(result)
-            return result
+            ref_matches.append(result)
+            candidates = result.candidates
+            continue
 
+        invalid_reference = True
         candidates.append(
             {
                 "booking_ref": booking["booking_ref"],
@@ -219,6 +236,23 @@ def resolve_identity(
             }
         )
 
+    if refs:
+        if len(ref_matches) == 1 and not invalid_reference and not unresolved:
+            result = ref_matches[0]
+            result.candidates = candidates
+            _apply_third_party_check(result)
+            return result
+        return IdentityResult(
+            confirmed=False, standard=None, booking_ref=None, booking=None,
+            customer_id=None, sender_email=sender_email,
+            sender_display_name=display_name,
+            reason=("S2.2: the supplied references are ambiguous, invalid, mismatched, "
+                    "or could not all be verified. No booking was selected; confirm "
+                    "the intended reference and passenger details."),
+            candidates=candidates, unresolved_checks=unresolved,
+            evidence=[s.source_id for s in ops.sources],
+        )
+
     # --- S2.1(b): exact contact email on exactly one booking -----------------
     if sender_email:
         try:
@@ -227,6 +261,7 @@ def resolve_identity(
                 r
                 for r in found.get("results", [])
                 if "contact_email_exact" in (r.get("matched_on") or [])
+                and r.get("contact_email") == sender_email
             ]
             for row in found.get("results", []):
                 candidates.append(
@@ -268,8 +303,14 @@ def resolve_identity(
             )
 
     # --- S2.1(c): normalised telephone on exactly one booking ----------------
-    phones = list(extraction.phone_numbers_in_body) if extraction else []
-    for phone in phones[:2]:
+    # The model cannot introduce a phone number absent from the message. Require
+    # explicit international notation and refuse multiple distinct numbers here.
+    phones = list(dict.fromkeys(normalise_phone(p) for p in re.findall(
+        r"(?:\+|00)\d[\d ()-]{7,}\d", inbound_text)))
+    if len(phones) > 1:
+        unresolved.append("Multiple contact telephone numbers supplied; confirm which belongs to the sender.")
+        phones = []
+    for phone in phones:
         digits = normalise_phone(phone)
         if len(digits) < 9:
             continue
@@ -298,6 +339,9 @@ def resolve_identity(
             )
         if len(exact) == 1:
             booking = ops.get_booking(exact[0]["booking_ref"])
+            if normalise_phone(booking.get("contact_phone")) != digits:
+                unresolved.append("The retrieved booking does not confirm the exact telephone match.")
+                continue
             result = IdentityResult(
                 confirmed=True,
                 standard="S2.1(c) telephone match on exactly one booking",
@@ -411,8 +455,8 @@ def _apply_third_party_check(result: IdentityResult) -> None:
     assumption in DECISIONS.md.
     """
     booking = result.booking or {}
-    contact_email = (booking.get("contact_email") or "").casefold()
-    sender = (result.sender_email or "").casefold()
+    contact_email = booking.get("contact_email") or ""
+    sender = result.sender_email or ""
     if sender and contact_email and sender == contact_email:
         return
 
@@ -420,11 +464,8 @@ def _apply_third_party_check(result: IdentityResult) -> None:
         "{} {}".format(p.get("given_name", ""), p.get("surname", "")).strip().casefold()
         for p in booking.get("passengers", [])
     }
-    surnames = {
-        (p.get("surname") or "").casefold() for p in booking.get("passengers", [])
-    }
     display = (result.sender_display_name or "").casefold().strip()
-    if display and (display in names or display.split()[-1:] and display.split()[-1] in surnames):
+    if display and display in names:
         return
 
     result.third_party_blocked = True

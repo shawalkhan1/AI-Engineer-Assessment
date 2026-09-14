@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import tempfile
 from collections import Counter
 from decimal import Decimal
@@ -58,8 +59,19 @@ def _atomic_write_json(path: Path, payload: Any) -> None:
     os.replace(handle.name, path)
 
 
+def validate_case_id(value: str) -> str:
+    """IDs become filenames: reject traversal, device names and summary collisions."""
+    if (not isinstance(value, str)
+            or not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,119}", value)
+            or value.endswith(".") or ".." in value
+            or value.casefold() in {"batch-summary", "ops-audit"}
+            or re.fullmatch(r"(?i)(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?", value)):
+        raise ValueError("case_id must be a safe, unique filename identifier (letters, digits, _, - or .).")
+    return value
+
+
 def write_case_record(record: CaseRecord, output_dir: Path) -> Path:
-    path = Path(output_dir) / "{}.json".format(record.case_id)
+    path = Path(output_dir) / "{}.json".format(validate_case_id(record.case_id))
     _atomic_write_json(path, record.model_dump(mode="json"))
     return path
 

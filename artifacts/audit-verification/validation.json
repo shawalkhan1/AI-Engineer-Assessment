@@ -1,0 +1,62 @@
+{
+  "repeat_added_zero_writes": true,
+  "dry_run_added_zero_writes": true,
+  "runs": {
+    "full-run": {
+      "calls": 24,
+      "tokens": {
+        "input": 58868,
+        "cached_input": 31502,
+        "cache_write": 25604,
+        "output": 12950,
+        "reasoning": 0
+      },
+      "calculated_cost_usd": "0.022925",
+      "unresolved_reservation_upper_bound_usd": "0.000000",
+      "unresolved_calls": 0,
+      "worst_case_total_usd": "0.022925"
+    },
+    "repeat-run": {
+      "calls": 24,
+      "tokens": {
+        "input": 58484,
+        "cached_input": 37273,
+        "cache_write": 19449,
+        "output": 12603,
+        "reasoning": 0
+      },
+      "calculated_cost_usd": "0.021082",
+      "unresolved_reservation_upper_bound_usd": "0.000000",
+      "unresolved_calls": 0,
+      "worst_case_total_usd": "0.021082"
+    },
+    "unseen": {
+      "calls": 2,
+      "tokens": {
+        "input": 4518,
+        "cached_input": 2597,
+        "cache_write": 1915,
+        "output": 810,
+        "reasoning": 0
+      },
+      "calculated_cost_usd": "0.001504",
+      "unresolved_reservation_upper_bound_usd": "0.000000",
+      "unresolved_calls": 0,
+      "worst_case_total_usd": "0.001504"
+    },
+    "dry-run": {
+      "calls": 24,
+      "tokens": {
+        "input": 58594,
+        "cached_input": 37273,
+        "cache_write": 19559,
+        "output": 12879,
+        "reasoning": 0
+      },
+      "calculated_cost_usd": "0.021444",
+      "unresolved_reservation_upper_bound_usd": "0.000000",
+      "unresolved_calls": 0,
+      "worst_case_total_usd": "0.021444"
+    }
+  }
+}

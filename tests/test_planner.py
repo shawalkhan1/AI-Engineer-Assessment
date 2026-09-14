@@ -341,7 +341,7 @@ def test_no_own_carrier_option_refers_and_never_books_partner_metal(config):
     assert not [p for p in plan.proposals if p.action_type == ActionType.REBOOKING]
     assert any(h.blocking_clause == "S8.2" for h in plan.handovers)
     # S8.2: partner re-routing is never actioned automatically.
-    assert inventory.partner_calls == 0
+    assert inventory.partner_calls == 1
 
 
 # ---------------------------------------------------------------------------
@@ -599,6 +599,7 @@ def test_a_room_already_issued_is_not_re_requested_or_referred(config):
         },
         existing_voucher={
             "voucher_id": "HTL-00012",
+            "passenger_ids": ["P1"],
             "station": "LGW",
             "night": "2026-08-06",
             "booking_ref": BOOKING_STRANDED["booking_ref"],
@@ -1345,7 +1346,7 @@ def test_the_departed_filter_is_sound_across_timezones():
         flight_date=date(2026, 8, 6),
         now_utc=datetime(2026, 8, 6, 8, 59, tzinfo=timezone.utc),
     )
-    assert just_after["chosen"] is not None, "not proven departed, so still offered"
+    assert just_after["chosen"] is None, "09:00 London summer time is 08:00 UTC, so already departed"
 
     clearly_gone = select_option(
         rows, cabin="ECONOMY", seats_needed=1, arrive_by=None, depart_not_before=None,
