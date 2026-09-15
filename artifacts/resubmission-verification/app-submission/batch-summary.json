@@ -1,0 +1,130 @@
+{
+  "run_id": "run-d6673dd03c",
+  "dry_run": false,
+  "cases": 1,
+  "statuses": {
+    "partially_resolved": 1
+  },
+  "status_note": "These are counts of outcomes, not an accuracy score. A case that was correctly handed to a human is a correct outcome, and a resolved case is only correct if the money and the journey were right.",
+  "actions": {
+    "escalation:succeeded": 2,
+    "hotel_voucher:succeeded": 1,
+    "rebooking:blocked": 1
+  },
+  "model_usage": {
+    "calls": 2,
+    "tokens": {
+      "input": 4994,
+      "cached_input": 2597,
+      "cache_write": 2391,
+      "output": 971,
+      "reasoning": 0
+    },
+    "calculated_cost_usd": "0.001816",
+    "unresolved_reservation_upper_bound_usd": "0.000000",
+    "unresolved_calls": 0,
+    "worst_case_total_usd": "0.001816"
+  },
+  "operations_api_reconciliation": {
+    "performed": true,
+    "server_totals": {
+      "money_paid_gbp": 0,
+      "rebookings_confirmed": 0,
+      "hotel_vouchers_issued": 1,
+      "escalations_raised": 2
+    },
+    "ids_we_recorded": [
+      "ESC-00002",
+      "ESC-00003",
+      "HTL-00001"
+    ],
+    "ids_in_server_audit": [
+      "ESC-00002",
+      "ESC-00003",
+      "HTL-00001"
+    ],
+    "recorded_but_absent_from_server": [],
+    "in_server_but_not_recorded_by_us": [],
+    "server_writes_predating_this_run": 0,
+    "server_was_reset_for_this_run": false,
+    "money_we_recorded_gbp": "0.00",
+    "money_in_server_audit_gbp": "0",
+    "note": "POST /_reset clears this log, so it is the state since the last reset rather than permanent history."
+  },
+  "configuration": {
+    "ops_base_url": "http://127.0.0.1:61476",
+    "ops_api_key": "set",
+    "openai_api_key": "set",
+    "openai_model": "gpt-5.6-luna",
+    "model_price_source": "https://developers.openai.com/api/docs/pricing",
+    "model_price_verified_on": "2026-09-14",
+    "journal_path": "C:\\Users\\Shawal Latif\\Desktop\\Joblogic_task\\AI-Engineer-Assessment\\state\\desk-journal.sqlite3",
+    "journal_namespace": "default",
+    "authority_level": "representative",
+    "notes": []
+  },
+  "notes": [
+    "Model gpt-5.6-luna verified available for this key before any billed call."
+  ],
+  "per_case": [
+    {
+      "case_id": "desk-579ba8175c26",
+      "status": "partially_resolved",
+      "booking_ref": "AER-8N4V6J",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "rebooking",
+          "state": "blocked",
+          "amount": "GBP 314.46",
+          "ids": null
+        },
+        {
+          "type": "hotel_voucher",
+          "state": "succeeded",
+          "amount": "GBP 165.00",
+          "ids": {
+            "voucher_id": "HTL-00001",
+            "issued_at": "2026-09-15T15:43:19Z",
+            "status": "ISSUED",
+            "rooms_remaining_after": 0
+          }
+        },
+        {
+          "type": "escalation",
+          "state": "succeeded",
+          "amount": null,
+          "ids": {
+            "escalation_id": "ESC-00002",
+            "raised_at": "2026-09-15T15:43:19Z",
+            "status": "OPEN",
+            "queue": "GENERAL"
+          }
+        },
+        {
+          "type": "escalation",
+          "state": "succeeded",
+          "amount": null,
+          "ids": {
+            "escalation_id": "ESC-00003",
+            "raised_at": "2026-09-15T15:43:19Z",
+            "status": "OPEN",
+            "queue": "SUPERVISOR"
+          }
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [
+        "ESC-00002",
+        "ESC-00003"
+      ],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.001816"
+    }
+  ],
+  "quality_audit": {
+    "passed": true,
+    "details": "Checking the captured API audit snapshot (no live server required).\ncase        status               booking      checks\n------------------------------------------------------------------------------\ndesk-579ba8175c26 partially_resolved   AER-8N4V6J   \n------------------------------------------------------------------------------\nwrites claimed by records: 3\nwrites in the server log : 3\n\nAll checks passed across 1 record(s).\n"
+  }
+}

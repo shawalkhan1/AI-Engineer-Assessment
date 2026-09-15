@@ -587,7 +587,16 @@ def run_case(
                 "booking_ref": identity.booking_ref if identity else None,
                 "reply_language": extraction.language if extraction else "en",
                 "we_need_from_you": needs_input,
-                "human_handover": {"required": bool(handovers), "next_steps": []},
+                "human_handover": {
+                    "required": bool(handovers),
+                    "what_to_tell_the_passenger": [
+                        "This needs a colleague to review it. " + (
+                            "It has been passed to them; no decision has been made."
+                            if status != CaseStatus.FAILED and not dry_run else
+                            "The handover has not been completed; no decision has been made."
+                        )
+                    ],
+                },
             }
         )
 
@@ -1054,6 +1063,16 @@ def _determine_status(
     ]
     passenger_facing_handovers = [h for h in handovers if not h.internal_only]
 
+    referrals = [a for a in actions if a.action_type == ActionType.ESCALATION]
+    if handovers and (not referrals or any(
+        a.state not in done_states or (
+            not dry_run and not (a.returned_ids or {}).get(
+                "existing" if a.state == ActionState.SKIPPED_DUPLICATE else "escalation_id"
+            )
+        ) for a in referrals
+    )):
+        return CaseStatus.FAILED
+
     if not identity_confirmed:
         return CaseStatus.HANDED_OVER
 
@@ -1447,7 +1466,9 @@ def _build_brief(
             # which is written for the colleague picking the case up and routinely
             # reads as a promise ("release the refund").
             "what_to_tell_the_passenger": [
-                h.note_for_passenger() for h in handovers if not h.internal_only
+                (h.note_for_passenger() if status != CaseStatus.FAILED and not dry_run else
+                 "This needs a colleague to review it. The handover has not been completed; no decision has been made.")
+                for h in handovers if not h.internal_only
             ],
         },
         "passenger_asked_for": [

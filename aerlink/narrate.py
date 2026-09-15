@@ -13,6 +13,7 @@ operation, so nothing here has reached the passenger.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from .config import NARRATE_MAX_OUTPUT_TOKENS
@@ -78,6 +79,18 @@ def run_narration(llm: LLMClient, brief: dict[str, Any]) -> CallResult:
         text_format=PassengerReply,
         max_output_tokens=NARRATE_MAX_OUTPUT_TOKENS,
     )
+
+
+def passenger_text(text: str) -> str:
+    """Remove policy citations and drafting instructions from template prose."""
+    text = re.sub(r"S16 requires both figures to be stated\.\s*", "", text)
+    text = re.sub(r"\bS\d+(?:\.\d+)*(?:\([a-z]\))?\b", "", text)
+    text = re.sub(r"\(\s*\)", "", text)
+    text = re.sub(r"(?:^|(?<=\.))\s*(?:and\s+)?(?:requires|forbid|forbids)\b[^.]*\.", "", text)
+    text = text.replace("None minutes", "not yet recorded").replace(" is not yet recorded", " is not yet recorded")
+    text = re.sub(r"\s+([,:;.])", r"\1", text)
+    text = re.sub(r"(?:^|(?<=\.))\s*:\s*", " ", text)
+    return re.sub(r"[ \t]+", " ", text).strip()
 
 
 def fallback_reply(brief: dict[str, Any]) -> PassengerReply:
@@ -147,5 +160,5 @@ def fallback_reply(brief: dict[str, Any]) -> PassengerReply:
     return PassengerReply(
         language=brief.get("reply_language", "en"),
         subject="Your booking {}".format(ref) if ref else "Your message to us",
-        body="\n".join(lines).strip(),
+        body="\n".join(passenger_text(line) for line in lines).strip(),
     )

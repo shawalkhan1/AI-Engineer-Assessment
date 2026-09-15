@@ -2,6 +2,10 @@
 
 A bounded OpenAI case worker for the supplied Aerlink Passenger Care Policy. It reads a message, establishes identity, checks airline records and entitlements, searches available remedies, executes authorised actions, and produces an auditable resolution or human referral. Passenger replies are drafts: the supplied API cannot send them.
 
+## Updated submission
+
+See [AGENT-WORKFLOW.md](AGENT-WORKFLOW.md) for the end-to-end design, fixes, and reviewer instructions, and [LIVE-TEST-RESULTS.md](LIVE-TEST-RESULTS.md) for the latest real OpenAI results and the retained timeout evidence. Credential-redacted evidence is included in `artifacts/resubmission-verification/`.
+
 ## Setup and one command
 
 Use Python 3.11 or newer (verified on Windows/Python 3.14). From the project directory, copy `.env.example` to `.env` and set `OPENAI_API_KEY` to your own key. Alternatively set it in your process environment. Never submit `.env`.
@@ -37,7 +41,7 @@ python tools/inspect_run.py artifacts/audit-verification/full-run
 python tools/check_transcript.py transcripts/
 ```
 
-The offline suite contains **310 tests**, with no OpenAI calls. Under a restricted Windows environment, keep pytest's temporary files in the workspace:
+The offline suite contains **314 tests**, with no OpenAI calls. Under a restricted Windows environment, keep pytest's temporary files in the workspace:
 
 ```sh
 python run.py --test --basetemp state/pytest-check --cache-clear
@@ -102,3 +106,17 @@ python tools/check_transcript.py transcripts/
 The exporter reads only sessions recorded in this workspace and never edits the originals. It redacts credentials, including matching fake credentials in tests, while keeping the conversation records.
 
 Exit codes: `0` completed (a successful handover counts), `2` configuration/input/setup failure, `3` execution or reconciliation failure.
+
+## Local review screen
+
+Start the local review screen:
+
+```powershell
+.\.venv\Scripts\python.exe serve.py
+```
+
+Open http://127.0.0.1:8080. Select an example or enter a message, sender and original received timestamp. Preview is enabled by default. The screen shows the draft, actions and independent audit result. The server binds only to this computer and owns an isolated, in-memory mock airline session. Restarting it starts a new mock session; records remain under `artifacts/desk`, with model accounting in `state/desk-journal.sqlite3`.
+
+To enable paid OpenAI processing of submitted messages, start with `--enable-ai`. This requires a working API key and network access. Each submitted case is capped at $0.25; the journal-wide ceiling remains $5. Local fallback mode is explicitly labelled and does not use a model. This is an assessment demo, not a connection to a real airline or an email-sending service.
+
+All CLI runs now perform an independent output audit before returning success. A blocked or unconfirmed handover returns failure rather than reporting a successful referral.

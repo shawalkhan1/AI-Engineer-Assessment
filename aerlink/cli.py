@@ -11,6 +11,7 @@ A case that was correctly handed to a human is **not** a failure and exits 0.
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 import uuid
 from decimal import Decimal
@@ -230,7 +231,7 @@ def main(argv: list[str] | None = None) -> int:
             )
         except Exception as exc:  # noqa: BLE001
             print(
-                "model {!r} is not available to this API key: {}".format(
+                "Could not verify model {!r}; check connectivity, credentials and model access: {}".format(
                     config.openai_model, redact(str(exc), config.openai_api_key, config.ops_api_key)[:200]
                 ),
                 file=sys.stderr,
@@ -298,6 +299,16 @@ def main(argv: list[str] | None = None) -> int:
         if not args.dry_run and (not rec.get("performed") or rec.get("recorded_but_absent_from_server")
                                  or rec.get("in_server_but_not_recorded_by_us")):
             exit_code = EXIT_EXECUTION
+        # A successful process is insufficient: validate the resulting decisions and replies.
+        audit_check = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve().parent.parent / "tools/inspect_run.py"), str(output_dir)],
+            capture_output=True, text=True, timeout=120,
+        )
+        summary["quality_audit"] = {"passed": audit_check.returncode == 0,
+                                    "details": audit_check.stdout + audit_check.stderr}
+        if audit_check.returncode:
+            exit_code = EXIT_EXECUTION
+            print(audit_check.stdout, file=sys.stderr)
         summary_path = write_batch_summary(summary, output_dir)
         print(render_console_summary(summary))
         print("\nrecords: {}\nsummary: {}".format(output_dir, summary_path))

@@ -23,7 +23,9 @@ def main():
     from aerlink.config import load_config
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
-    parser.add_argument('--smoke', action='store_true')
+    modes = parser.add_mutually_exclusive_group()
+    modes.add_argument('--smoke', action='store_true')
+    modes.add_argument('--preview-only', action='store_true', help='Validate all cases in preview without repeating successful live write checks')
     args = parser.parse_args()
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
@@ -71,6 +73,17 @@ def main():
         if args.smoke:
             worker('smoke', ['--inbound', 'cases/case-09/inbound.txt', '--meta', 'cases/case-09/meta.json'], '--dry-run')
             assert all(not rows for rows in audit()['writes'].values())
+            return 0
+        if args.preview_only:
+            before = audit()['writes']
+            summary = worker('dry-run', ['--cases', 'cases'], '--dry-run')
+            after = audit()['writes']
+            assert after == before, 'Dry run changed server state'
+            (output / 'validation.json').write_text(json.dumps({
+                'dry_run_added_zero_writes': True,
+                'runs': {'dry-run': summary['model_usage']},
+            }, indent=2), encoding='utf-8')
+            print('All preview checks passed; evidence at {}'.format(output))
             return 0
         results = {}
         results['full-run'] = worker('full-run', ['--cases', 'cases'], '--reset-ops')

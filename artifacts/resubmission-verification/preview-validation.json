@@ -1,0 +1,19 @@
+{
+  "dry_run_added_zero_writes": true,
+  "runs": {
+    "dry-run": {
+      "calls": 24,
+      "tokens": {
+        "input": 58040,
+        "cached_input": 37273,
+        "cache_write": 19033,
+        "output": 12835,
+        "reasoning": 0
+      },
+      "calculated_cost_usd": "0.021252",
+      "unresolved_reservation_upper_bound_usd": "0.000000",
+      "unresolved_calls": 0,
+      "worst_case_total_usd": "0.021252"
+    }
+  }
+}

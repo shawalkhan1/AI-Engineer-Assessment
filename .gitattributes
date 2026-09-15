@@ -1,0 +1,3 @@
+# Preserve verification evidence bytes so manifest hashes survive checkout.
+/transcripts/*.jsonl -text
+/artifacts/resubmission-verification/** -text

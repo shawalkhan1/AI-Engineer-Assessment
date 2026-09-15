@@ -1,0 +1,379 @@
+{
+  "run_id": "run-eb8578ed75",
+  "dry_run": true,
+  "cases": 12,
+  "statuses": {
+    "handed_over": 10,
+    "partially_resolved": 2
+  },
+  "status_note": "These are counts of outcomes, not an accuracy score. A case that was correctly handed to a human is a correct outcome, and a resolved case is only correct if the money and the journey were right.",
+  "actions": {
+    "compensation_payment:blocked": 3,
+    "escalation:would_execute": 19,
+    "hotel_voucher:would_execute": 2,
+    "rebooking:blocked": 4
+  },
+  "model_usage": {
+    "calls": 24,
+    "tokens": {
+      "input": 58040,
+      "cached_input": 37273,
+      "cache_write": 19033,
+      "output": 12835,
+      "reasoning": 0
+    },
+    "calculated_cost_usd": "0.021252",
+    "unresolved_reservation_upper_bound_usd": "0.000000",
+    "unresolved_calls": 0,
+    "worst_case_total_usd": "0.021252"
+  },
+  "operations_api_reconciliation": {
+    "performed": false
+  },
+  "configuration": {
+    "ops_base_url": "http://127.0.0.1:61718",
+    "ops_api_key": "set",
+    "openai_api_key": "set",
+    "openai_model": "gpt-5.6-luna",
+    "model_price_source": "https://developers.openai.com/api/docs/pricing",
+    "model_price_verified_on": "2026-09-14",
+    "journal_path": "C:\\Users\\Shawal Latif\\Desktop\\Joblogic_task\\AI-Engineer-Assessment\\state\\journal.sqlite3",
+    "journal_namespace": "audit-dry-run",
+    "authority_level": "representative",
+    "notes": []
+  },
+  "notes": [
+    "Model gpt-5.6-luna verified available for this key before any billed call.",
+    "DRY RUN: no operations API write was sent, including handovers. Model calls were still made and still cost money."
+  ],
+  "per_case": [
+    {
+      "case_id": "case-01",
+      "status": "handed_over",
+      "booking_ref": "AER-4K2P9X",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "rebooking",
+          "state": "blocked",
+          "amount": "GBP 52.24",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.001668"
+    },
+    {
+      "case_id": "case-02",
+      "status": "handed_over",
+      "booking_ref": "AER-7T3M1B",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 3,
+      "errors": 0,
+      "cost_usd": "0.002623"
+    },
+    {
+      "case_id": "case-03",
+      "status": "handed_over",
+      "booking_ref": null,
+      "identity_confirmed": false,
+      "actions": [
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.000734"
+    },
+    {
+      "case_id": "case-04",
+      "status": "handed_over",
+      "booking_ref": null,
+      "identity_confirmed": false,
+      "actions": [
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.001068"
+    },
+    {
+      "case_id": "case-05",
+      "status": "handed_over",
+      "booking_ref": "AER-9L5D2R",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 2,
+      "errors": 0,
+      "cost_usd": "0.001892"
+    },
+    {
+      "case_id": "case-06",
+      "status": "handed_over",
+      "booking_ref": "AER-2Q8W4N",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "compensation_payment",
+          "state": "blocked",
+          "amount": "GBP 220.00",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 2,
+      "errors": 0,
+      "cost_usd": "0.001319"
+    },
+    {
+      "case_id": "case-07",
+      "status": "handed_over",
+      "booking_ref": "AER-6H1Z7C",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "compensation_payment",
+          "state": "blocked",
+          "amount": "GBP 220.00",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.001603"
+    },
+    {
+      "case_id": "case-08",
+      "status": "handed_over",
+      "booking_ref": "AER-3B7Y5K",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "compensation_payment",
+          "state": "blocked",
+          "amount": "GBP 415.00",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.002284"
+    },
+    {
+      "case_id": "case-09",
+      "status": "partially_resolved",
+      "booking_ref": "AER-8N4V6J",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "rebooking",
+          "state": "blocked",
+          "amount": "GBP 314.46",
+          "ids": null
+        },
+        {
+          "type": "hotel_voucher",
+          "state": "would_execute",
+          "amount": "GBP 165.00",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.001855"
+    },
+    {
+      "case_id": "case-10",
+      "status": "handed_over",
+      "booking_ref": "AER-5C9X3T",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "rebooking",
+          "state": "blocked",
+          "amount": "GBP 311.58",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.002372"
+    },
+    {
+      "case_id": "case-11",
+      "status": "partially_resolved",
+      "booking_ref": "AER-7P4R2M",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "hotel_voucher",
+          "state": "would_execute",
+          "amount": "GBP 165.00",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 2,
+      "errors": 0,
+      "cost_usd": "0.002049"
+    },
+    {
+      "case_id": "case-12",
+      "status": "handed_over",
+      "booking_ref": "AER-1F6G8P",
+      "identity_confirmed": true,
+      "actions": [
+        {
+          "type": "rebooking",
+          "state": "blocked",
+          "amount": "GBP 296.87",
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        },
+        {
+          "type": "escalation",
+          "state": "would_execute",
+          "amount": null,
+          "ids": null
+        }
+      ],
+      "human_handover_required": true,
+      "escalation_ids": [],
+      "uncertainties": 1,
+      "errors": 0,
+      "cost_usd": "0.001785"
+    }
+  ],
+  "quality_audit": {
+    "passed": true,
+    "details": "case        status               booking      checks\n------------------------------------------------------------------------------\ncase-01     handed_over          AER-4K2P9X   \ncase-02     handed_over          AER-7T3M1B   \ncase-03     handed_over          -            \ncase-04     handed_over          -            \ncase-05     handed_over          AER-9L5D2R   \ncase-06     handed_over          AER-2Q8W4N   \ncase-07     handed_over          AER-6H1Z7C   \ncase-08     handed_over          AER-3B7Y5K   \ncase-09     partially_resolved   AER-8N4V6J   \ncase-10     handed_over          AER-5C9X3T   \ncase-11     partially_resolved   AER-7P4R2M   \ncase-12     handed_over          AER-1F6G8P   \n------------------------------------------------------------------------------\n\nAll checks passed across 12 record(s).\n"
+  }
+}

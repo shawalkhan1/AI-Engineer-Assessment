@@ -16,3 +16,6 @@ artifacts/*
 !artifacts/audit-verification/
 !artifacts/ACTION-REVIEW.md
 !artifacts/model-usage-ledger.json
+
+# Credential-redacted JSON evidence for the updated submission
+!artifacts/resubmission-verification/

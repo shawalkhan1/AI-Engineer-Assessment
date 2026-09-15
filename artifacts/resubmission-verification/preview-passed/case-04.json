@@ -1,0 +1,237 @@
+{
+  "schema_version": 1,
+  "case_id": "case-04",
+  "run_id": "run-eb8578ed75",
+  "started_at": "2026-09-15T15:50:51Z",
+  "finished_at": "2026-09-15T15:50:57Z",
+  "dry_run": true,
+  "status": "handed_over",
+  "input_provenance": {
+    "inbound_path": "cases\\case-04\\inbound.txt",
+    "inbound_sha256": "66bd44fd5415a7b4d8be12c052ba555981a34b683ba625c0986055c1f2adcbb7",
+    "inbound_bytes": 698,
+    "metadata_path": "cases\\case-04\\meta.json",
+    "metadata_origin": "supplied meta.json, treated as trusted transport metadata",
+    "metadata_fields": [
+      "case_id",
+      "channel",
+      "from",
+      "received_at",
+      "subject"
+    ],
+    "trust_model": "meta.from is transport metadata from the mail system. Everything inside inbound.txt, including any header it quotes, is passenger-supplied and untrusted (S12.4).",
+    "urls_in_message_not_followed": [],
+    "injection_indicators": [],
+    "case_now": "2026-08-05T11:02:55+00:00",
+    "case_now_source": "meta.received_at"
+  },
+  "identity_resolution": {
+    "confirmed": false,
+    "confirmation_standard": null,
+    "verified_booking_ref": null,
+    "customer_id": null,
+    "sender_email": "p.lindqvist@mailbox.example",
+    "sender_display_name": "Peter Lindqvist",
+    "reason": "S2.2: the supplied references are ambiguous, invalid, mismatched, or could not all be verified. No booking was selected; confirm the intended reference and passenger details.",
+    "candidates_considered": [
+      {
+        "booking_ref": "BA-99201",
+        "source": "reference supplied by the contact",
+        "outcome": "no such booking in the operational record"
+      }
+    ],
+    "unresolved_checks": [],
+    "evidence_source_ids": [],
+    "third_party_contact_blocked": false,
+    "rule": "APCP-2026-04 S2.1 permits confirmation only by (a) reference plus matching surname, (b) an exact contact email on exactly one booking, or (c) a normalised telephone match on exactly one booking. S2.2: a partial or probable match is not a match."
+  },
+  "passenger_requests": {
+    "read": true,
+    "language": "en",
+    "requests": [],
+    "preferences_and_consent": {
+      "explicitly_asked_for_earliest_available": false,
+      "arrive_by_local": null,
+      "travel_date_iso": null,
+      "depart_not_before_local": null,
+      "alternative_origin_airports": [],
+      "supporting_quote": null
+    },
+    "passenger_claims_to_investigate": [
+      {
+        "topic": "cancellation",
+        "claim": "The passenger says their flight was cancelled.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "my cancelled flight"
+      },
+      {
+        "topic": "other",
+        "claim": "The passenger says the flight was from Copenhagen to Manchester on 29 July.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "on 29 July, Copenhagen to Manchester"
+      },
+      {
+        "topic": "delay_length",
+        "claim": "The passenger says they were delayed nine hours.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "I was delayed nine hours"
+      },
+      {
+        "topic": "prior_contact",
+        "claim": "The passenger says they have written twice previously without receiving a reply.",
+        "amount_gbp": null,
+        "is_the_amount_being_demanded": false,
+        "quote": "I have now written twice with no reply whatsoever."
+      }
+    ],
+    "embedded_instructions_refused": [],
+    "unclear_points": [],
+    "span_verification": {
+      "spans_verified": 8,
+      "spans_unverified": 0,
+      "unverified": [],
+      "verified_booking_refs": [
+        "BA-99201"
+      ],
+      "verified_request_indexes": [
+        0,
+        1,
+        2
+      ],
+      "note": "A quote that cannot be found in the message is not evidence. Claims listed under 'unverified' are recorded but are not relied on."
+    },
+    "we_asked_the_passenger_for": [
+      "We need the booking reference and the surname it is held in before we can look at this. We have not taken any action on any booking."
+    ],
+    "what_became_of_each_request": [],
+    "unaddressed_requests": []
+  },
+  "verified_facts": {
+    "gathered": false,
+    "reason": "identity was not confirmed"
+  },
+  "policy_evaluation": {
+    "evaluated": false,
+    "reason": "identity was not confirmed"
+  },
+  "decision": {
+    "status": "handed_over",
+    "rationale": [
+      "S2.2: identity is not confirmed, so no remedy may be actioned on any booking (S16). S2.2: the supplied references are ambiguous, invalid, mismatched, or could not all be verified. No booking was selected; confirm the intended reference and passenger details."
+    ],
+    "what_the_passenger_gets": [],
+    "rejected_alternatives": [],
+    "referred_to_humans": [
+      {
+        "queue": "SUPERVISOR",
+        "blocking_clause": "S2.2, S12.1",
+        "requested_decision": "Establish who this contact is and which booking they mean, or close the contact.",
+        "internal_only": false
+      }
+    ]
+  },
+  "sources_consulted": [],
+  "actions": [
+    {
+      "action_id": "ACT-esc-01-supervisor",
+      "action_type": "escalation",
+      "state": "would_execute",
+      "booking_ref": null,
+      "passenger_ids": [],
+      "amount": null,
+      "itinerary": null,
+      "policy_basis": [
+        "S12.5",
+        "S2.2, S12.1"
+      ],
+      "preconditions_checked": {
+        "referral_completeness": "S12.5 requires what the passenger asked for, what the record shows, the recommended outcome, the blocking condition, and what the referring party must decide. All five are present.",
+        "benefit_scope_keys": [],
+        "refreshed_immediately_before_write": {
+          "refreshed": false,
+          "reason": "no mutable precondition"
+        }
+      },
+      "consent_basis": null,
+      "blocked_reason": null,
+      "fingerprint": "25db22d14233e74f90882d003424d679d0319cc2b410b5c4df3022f5e6658522",
+      "journal_key": null,
+      "request_summary": null,
+      "response_status": null,
+      "returned_ids": null,
+      "verification": "Dry run: no request was sent to the operations API. This is a proposal, not a completed action.",
+      "error": null
+    }
+  ],
+  "uncertainties": [
+    {
+      "issue": "Identity is not confirmed: S2.2: the supplied references are ambiguous, invalid, mismatched, or could not all be verified. No booking was selected; confirm the intended reference and passenger details.",
+      "effect_on_decision": "Every remedy is blocked (S16). The case is referred and the passenger is asked for identifying details."
+    }
+  ],
+  "human_handover": {
+    "required": true,
+    "reason": "S2.2, S12.1",
+    "escalation_ids": [],
+    "api_handover_succeeded": false,
+    "next_steps": [
+      "Establish who this contact is and which booking they mean, or close the contact."
+    ]
+  },
+  "passenger_response": {
+    "language": "en",
+    "subject": "Booking details needed",
+    "body": "Dear Peter Lindqvist,\n\nWe need the booking reference and the surname it is held in before we can look at this. We have not taken any action on any booking.\n\nThis needs a colleague to review it. The handover has not been completed; no decision has been made.",
+    "status": "draft",
+    "note": "Draft only. The operations API exposes no send operation, so this text has not reached the passenger.",
+    "generated_by": "model"
+  },
+  "usage": {
+    "model": "gpt-5.6-luna",
+    "price_source": "https://developers.openai.com/api/docs/pricing",
+    "price_verified_on": "2026-09-14",
+    "prices_usd_per_mtok": {
+      "input": "0.20",
+      "cached_input": "0.02",
+      "cache_write": "0.2500",
+      "output": "1.20"
+    },
+    "calls": [
+      {
+        "purpose": "extraction",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_0c0592f0064b377f016aa9695a772087d2b0a0ffee4ed8f0e6",
+        "input_tokens": 2925,
+        "cached_input_tokens": 2922,
+        "cache_write_tokens": 0,
+        "output_tokens": 618,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000801",
+        "reserved_upper_bound_usd": "0.003705",
+        "reservation_resolved": true,
+        "note": null
+      },
+      {
+        "purpose": "narration",
+        "model": "gpt-5.6-luna",
+        "request_id": "resp_0694fa5381baa0a8016aa9695edbb487d28aba5b54ec727693",
+        "input_tokens": 836,
+        "cached_input_tokens": 0,
+        "cache_write_tokens": 0,
+        "output_tokens": 83,
+        "reasoning_tokens": 0,
+        "calculated_cost_usd": "0.000267",
+        "reserved_upper_bound_usd": "0.001955",
+        "reservation_resolved": true,
+        "note": null
+      }
+    ],
+    "case_calculated_cost_usd": "0.001068",
+    "case_unresolved_reservation_upper_bound_usd": "0",
+    "note": "Cost is derived from the usage the API reported, priced from the table above. Cached input and reasoning tokens are subsets of input and output tokens respectively and are each counted once. This is a calculated figure, not a billing statement from OpenAI."
+  },
+  "errors": []
+}

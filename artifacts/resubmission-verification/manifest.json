@@ -1,0 +1,365 @@
+{
+  "description": "JSON evidence only; original timeout retained; credential values redacted; token detection respects identifier boundaries; server logs excluded.",
+  "files": [
+    {
+      "file": "full-run/batch-summary.json",
+      "source": "artifacts/live-approved-20260915/full-run/batch-summary.json",
+      "credential_replacements": 0,
+      "sha256": "e69f92a8626e4b245958e731b6a26153a66c1dc7131c6ecec63ca21fb0a31b0b"
+    },
+    {
+      "file": "full-run/case-01.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-01.json",
+      "credential_replacements": 0,
+      "sha256": "5ae34aa54f2c08da89f1e96709f0c71eea017fc456e761f8645dcd08df2e789b"
+    },
+    {
+      "file": "full-run/case-02.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-02.json",
+      "credential_replacements": 0,
+      "sha256": "1033ad5585e12da7127ca2ff40851012b93498178020843e419f5ace54acb089"
+    },
+    {
+      "file": "full-run/case-03.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-03.json",
+      "credential_replacements": 0,
+      "sha256": "c8af4b6e1109ec3216ee71056041c96ce3f085a4ad28afcafebc3babda5d746b"
+    },
+    {
+      "file": "full-run/case-04.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-04.json",
+      "credential_replacements": 0,
+      "sha256": "63a3d4a44b479dc7c2418d27557ca7a72ccfe353e52bb91d870467e95852d0bb"
+    },
+    {
+      "file": "full-run/case-05.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-05.json",
+      "credential_replacements": 0,
+      "sha256": "555a3be4c6eac1c616a16ecd16e1b68bee35d474955c7fdc1728d25bb1accd27"
+    },
+    {
+      "file": "full-run/case-06.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-06.json",
+      "credential_replacements": 0,
+      "sha256": "d6a902147ef1a7af9d78a3740ed74448beed904a17a55ab55f5e54c16fce10cd"
+    },
+    {
+      "file": "full-run/case-07.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-07.json",
+      "credential_replacements": 0,
+      "sha256": "603d8757b5ecce34c89dfa684d5533a7213d8ded01b55245eb10cf715086fbf7"
+    },
+    {
+      "file": "full-run/case-08.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-08.json",
+      "credential_replacements": 0,
+      "sha256": "5cf42f7fe0356236a9a23a449fe0d2725415430233fba77a1ec3e088f9d00171"
+    },
+    {
+      "file": "full-run/case-09.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-09.json",
+      "credential_replacements": 0,
+      "sha256": "12b89ebbcbc49cd9f8672846fbaeec2f6a1cbf8b7a4bfdae2b0e1431aa27920e"
+    },
+    {
+      "file": "full-run/case-10.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-10.json",
+      "credential_replacements": 0,
+      "sha256": "ba4d661e861be3581626c201ee43f58c42804390ccf74cd416834300a7b68e38"
+    },
+    {
+      "file": "full-run/case-11.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-11.json",
+      "credential_replacements": 0,
+      "sha256": "07a84c8747013ed8e06cc666e02399cbad95554e59931c7892bbf8eefee1b32a"
+    },
+    {
+      "file": "full-run/case-12.json",
+      "source": "artifacts/live-approved-20260915/full-run/case-12.json",
+      "credential_replacements": 0,
+      "sha256": "80d925096492f87c3356cac2cacea322a877e1383963c938826e3859bb20a3dc"
+    },
+    {
+      "file": "full-run/ops-audit.json",
+      "source": "artifacts/live-approved-20260915/full-run/ops-audit.json",
+      "credential_replacements": 0,
+      "sha256": "f775cbdd8cbf0b5324d98f07dcd05fab57a5edc15140c5deb49ad862cfa0e1c2"
+    },
+    {
+      "file": "repeat-run/batch-summary.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/batch-summary.json",
+      "credential_replacements": 0,
+      "sha256": "024b075c10a233e2091b2b5a973e18070973453576a58007a683d4097af40d38"
+    },
+    {
+      "file": "repeat-run/case-01.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-01.json",
+      "credential_replacements": 0,
+      "sha256": "15ad96d3fe21cedb378f7929d6a14bc158645b96229cb04599f87a4846669ae7"
+    },
+    {
+      "file": "repeat-run/case-02.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-02.json",
+      "credential_replacements": 0,
+      "sha256": "eeab63585ae8cb10c473a910d86e403bf715b63e8b3f6c42eb152363141dff5c"
+    },
+    {
+      "file": "repeat-run/case-03.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-03.json",
+      "credential_replacements": 0,
+      "sha256": "c35f91cb6788f51c0c882805560782c2ddd9888e4bf23c9b7b7e0089a79a2a92"
+    },
+    {
+      "file": "repeat-run/case-04.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-04.json",
+      "credential_replacements": 0,
+      "sha256": "f45fd8027a82a7c9245af1962fec95793d185622021bc9a70d1358df44cd535d"
+    },
+    {
+      "file": "repeat-run/case-05.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-05.json",
+      "credential_replacements": 0,
+      "sha256": "a047c5c0a5765be451894c181444ae6ab8937cb95fc83d384aa20c39c6d84408"
+    },
+    {
+      "file": "repeat-run/case-06.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-06.json",
+      "credential_replacements": 0,
+      "sha256": "b05754392948c191d5f7cdce20c3deacabf215f705b2330ba01724f85f868360"
+    },
+    {
+      "file": "repeat-run/case-07.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-07.json",
+      "credential_replacements": 0,
+      "sha256": "05236dd1db91ff0eaea07645eadc6dfbab204a02c6a0533c4470846fe93013dc"
+    },
+    {
+      "file": "repeat-run/case-08.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-08.json",
+      "credential_replacements": 0,
+      "sha256": "990cff1f2c23a555bad65f4f2f954edf622b422e352784363883602fa781eaea"
+    },
+    {
+      "file": "repeat-run/case-09.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-09.json",
+      "credential_replacements": 0,
+      "sha256": "600692e638a7bdfa188bd6520043d7ec7ba6289ccc6fa2c0c3b3b87c59242b7d"
+    },
+    {
+      "file": "repeat-run/case-10.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-10.json",
+      "credential_replacements": 0,
+      "sha256": "d2b1192ae2d63816bc2417c41a22355a30d3ccd3c199181e5a3cdcfde1e04b1a"
+    },
+    {
+      "file": "repeat-run/case-11.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-11.json",
+      "credential_replacements": 0,
+      "sha256": "1d620c19d578bfdc2c4597713a43c09bd0b1afb59c08579f385ee90e81ba37c3"
+    },
+    {
+      "file": "repeat-run/case-12.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/case-12.json",
+      "credential_replacements": 0,
+      "sha256": "ef6a38524b16361fba329feaeacb7802a76e9a183cb04cd4d7cbe0ed9ad52655"
+    },
+    {
+      "file": "repeat-run/ops-audit.json",
+      "source": "artifacts/live-approved-20260915/repeat-run/ops-audit.json",
+      "credential_replacements": 0,
+      "sha256": "1c60126495d354800fb52df3d4a00e129aa2be4fefad92546f02b9d967e39aa7"
+    },
+    {
+      "file": "unseen/batch-summary.json",
+      "source": "artifacts/live-approved-20260915/unseen/batch-summary.json",
+      "credential_replacements": 0,
+      "sha256": "c07a7090d861c3183f66f11fa75ae804c80cf58890810aa556de7282b103e43c"
+    },
+    {
+      "file": "unseen/ops-audit.json",
+      "source": "artifacts/live-approved-20260915/unseen/ops-audit.json",
+      "credential_replacements": 0,
+      "sha256": "6dd142fdf8eeaab761657ed4bc7d07beed9b80d539d2a2c93efe06cb9607d131"
+    },
+    {
+      "file": "unseen/unseen-audit.json",
+      "source": "artifacts/live-approved-20260915/unseen/unseen-audit.json",
+      "credential_replacements": 0,
+      "sha256": "3b5f96afe51808b2b9abe640e584a39c87f46d93394378ae62004b6b483def80"
+    },
+    {
+      "file": "preview-timeout/batch-summary.json",
+      "source": "artifacts/live-approved-20260915/dry-run/batch-summary.json",
+      "credential_replacements": 0,
+      "sha256": "6c2dfee1cbfefe067efc320ef06938e03a5c0222a32dfb7606d3959b5715bc0b"
+    },
+    {
+      "file": "preview-timeout/case-01.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-01.json",
+      "credential_replacements": 0,
+      "sha256": "686e8eb19a38416dea6071a76c0a30bd98225dd1ae098e7b562de1b6191162f8"
+    },
+    {
+      "file": "preview-timeout/case-02.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-02.json",
+      "credential_replacements": 0,
+      "sha256": "808105bf7c2b067cbde7f112254f817f5e5fb07794ce0f09e15c7071547bd88a"
+    },
+    {
+      "file": "preview-timeout/case-03.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-03.json",
+      "credential_replacements": 0,
+      "sha256": "7dc56748034fec6d6458e243aa76d46c3a21e89d1a8400613e246791c967b1a7"
+    },
+    {
+      "file": "preview-timeout/case-04.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-04.json",
+      "credential_replacements": 0,
+      "sha256": "b5a19770ad47ab821f22514914212f25fe7b368f1950e67774edcba1d1f0827c"
+    },
+    {
+      "file": "preview-timeout/case-05.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-05.json",
+      "credential_replacements": 0,
+      "sha256": "491a5d3a580a23e095b1cba4489a5fe818dc7d6ca526e9396b743cae03dd62b0"
+    },
+    {
+      "file": "preview-timeout/case-06.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-06.json",
+      "credential_replacements": 0,
+      "sha256": "277bebecb0bd37b556b12dd55866a1065ca6db0229275f0f823b65529834e5e4"
+    },
+    {
+      "file": "preview-timeout/case-07.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-07.json",
+      "credential_replacements": 0,
+      "sha256": "8096659337075a99bf6c50cff150d6c8a454237091631d9de057069f61dd9e37"
+    },
+    {
+      "file": "preview-timeout/case-08.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-08.json",
+      "credential_replacements": 0,
+      "sha256": "990d3974e9ad5442c165431e0b36f77124c412dc546a18c66f87ff3c8fd70079"
+    },
+    {
+      "file": "preview-timeout/case-09.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-09.json",
+      "credential_replacements": 0,
+      "sha256": "1c61624dc48f1e740ba3ac2adad94b006de8e41df59fb473e419533be8dac105"
+    },
+    {
+      "file": "preview-timeout/case-10.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-10.json",
+      "credential_replacements": 0,
+      "sha256": "8da1642478fd2f11158c0d12a55f8417580f381ef273b420aa187452c23c0d4a"
+    },
+    {
+      "file": "preview-timeout/case-11.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-11.json",
+      "credential_replacements": 0,
+      "sha256": "86c7463fef66b6bc74e3dff9b6da7483fe6db472b504ffb08a460d1fd1336a19"
+    },
+    {
+      "file": "preview-timeout/case-12.json",
+      "source": "artifacts/live-approved-20260915/dry-run/case-12.json",
+      "credential_replacements": 0,
+      "sha256": "0dee1230550589627d4ff2c8209bec4d2e93f40365487e60545bea023fc2fd1d"
+    },
+    {
+      "file": "preview-passed/batch-summary.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/batch-summary.json",
+      "credential_replacements": 0,
+      "sha256": "4391165b5c3da810bc3a2574a641d51aa6eec46a480bf7ecffc79b6c48160c4c"
+    },
+    {
+      "file": "preview-passed/case-01.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-01.json",
+      "credential_replacements": 0,
+      "sha256": "b631b01190d166dd7aef4999707ef8f5beb336cd4bc59786d515da401491a481"
+    },
+    {
+      "file": "preview-passed/case-02.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-02.json",
+      "credential_replacements": 0,
+      "sha256": "66d78efcfc1380e796f48624317ce19795dec2bb56cecc88e3cb6cba504786b9"
+    },
+    {
+      "file": "preview-passed/case-03.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-03.json",
+      "credential_replacements": 0,
+      "sha256": "6a5ef36f4bf7c18e1f2ed77afae73aa2fc87cc8f69d22acc509208590384ac83"
+    },
+    {
+      "file": "preview-passed/case-04.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-04.json",
+      "credential_replacements": 0,
+      "sha256": "a2b567e214d9187493bc40fdf7007a5aa3e2a9314f04902aac94c5dc351f8793"
+    },
+    {
+      "file": "preview-passed/case-05.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-05.json",
+      "credential_replacements": 0,
+      "sha256": "fa8032f595b1612e373282bfe62e7c3b04ba2c61c8b3f09d3d3fc2f841e2f8dd"
+    },
+    {
+      "file": "preview-passed/case-06.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-06.json",
+      "credential_replacements": 0,
+      "sha256": "9fffd23fc4495aac4dde4baf9bcdf1f92a2298c14f31ba4beca5f22d0b64ed23"
+    },
+    {
+      "file": "preview-passed/case-07.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-07.json",
+      "credential_replacements": 0,
+      "sha256": "7da1aebbdccd7318fe5f99a5de124685ea913a95a770f0c50b48978df3acfb28"
+    },
+    {
+      "file": "preview-passed/case-08.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-08.json",
+      "credential_replacements": 0,
+      "sha256": "2a7593d0ed02256f4134d10541d22512e67848bc79524e4c5e37184086c64fd9"
+    },
+    {
+      "file": "preview-passed/case-09.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-09.json",
+      "credential_replacements": 0,
+      "sha256": "bc59f369722342a915f455c8e00a28f3860c4f3a8a67562634accae25d510379"
+    },
+    {
+      "file": "preview-passed/case-10.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-10.json",
+      "credential_replacements": 0,
+      "sha256": "41037bbe3a4a82362c8196b7a14cf62d17782a0095c6e8e4b2625314bfb59550"
+    },
+    {
+      "file": "preview-passed/case-11.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-11.json",
+      "credential_replacements": 0,
+      "sha256": "2ff9fd9f395396897f19cee5847b62b49cb4c4503d50b2a37392e2b69076bee9"
+    },
+    {
+      "file": "preview-passed/case-12.json",
+      "source": "artifacts/live-preview-recheck-20260915/dry-run/case-12.json",
+      "credential_replacements": 0,
+      "sha256": "32dbe563da9ccc93041503459b912f17529b333ff3f97c426d2a8cf7b9128cd0"
+    },
+    {
+      "file": "app-submission/batch-summary.json",
+      "source": "artifacts/desk/desk-579ba8175c26/batch-summary.json",
+      "credential_replacements": 0,
+      "sha256": "7c53e458e5849f2f0e31cf5cb497ad325c9b222304d625c2cd17fda7907531fa"
+    },
+    {
+      "file": "app-submission/desk-579ba8175c26.json",
+      "source": "artifacts/desk/desk-579ba8175c26/desk-579ba8175c26.json",
+      "credential_replacements": 0,
+      "sha256": "e0f93ce1b84f6bc2d9ea32a5cf9a84d4fdabd125bac174de073e678d58a7dd19"
+    },
+    {
+      "file": "app-submission/ops-audit.json",
+      "source": "artifacts/desk/desk-579ba8175c26/ops-audit.json",
+      "credential_replacements": 0,
+      "sha256": "a3e7765b221e144344a48b5d487dfc61fc77c1a900bf35de6c5a6cd82a7e9092"
+    }
+  ]
+}

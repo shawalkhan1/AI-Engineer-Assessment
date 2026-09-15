@@ -1,5 +1,5 @@
 {
-  "exported_at_utc": "2026-09-14T23:40:12.148288+00:00",
+  "exported_at_utc": "2026-09-15T15:57:22.667982+00:00",
   "content": "Actual raw session records; no conversation summarisation or personal cuts.",
   "redaction": "Only known credentials and credential-shaped tokens were replaced with [REDACTED], including matching test fixtures.",
   "cutoff": "Active sessions are snapshots through their last complete record; rerun after the final assistant turn to include subsequent messages.",
@@ -18,12 +18,12 @@
     {
       "file": "codex-rollout-2026-09-14T03-43-59-01a09cf1-133e-7ab2-89b3-327b7c8d728d.jsonl",
       "source_file": "rollout-2026-09-14T03-43-59-01a09cf1-133e-7ab2-89b3-327b7c8d728d.jsonl",
-      "source_bytes_at_export": 4043837,
-      "complete_source_bytes_exported": 4043837,
-      "records": 710,
+      "source_bytes_at_export": 4245121,
+      "complete_source_bytes_exported": 4245121,
+      "records": 829,
       "credential_replacements": 63,
-      "export_sha256": "b938efcd94fff27b1139b9be307523540aa244b531a2d03e0d2809c51d36d19c",
-      "export_bytes": 4026131,
+      "export_sha256": "9c4e3f1ce519d71a9a60bac2de77b26fe928971b1f28f59cb59a8916ba4840f3",
+      "export_bytes": 4227415,
       "tool": "codex"
     },
     {
@@ -84,23 +84,45 @@
     {
       "file": "codex-rollout-2026-09-15T04-14-34-01a0a233-6ca3-77b2-ac15-4090e46ad84b.jsonl",
       "source_file": "rollout-2026-09-15T04-14-34-01a0a233-6ca3-77b2-ac15-4090e46ad84b.jsonl",
-      "source_bytes_at_export": 48114,
-      "complete_source_bytes_exported": 48114,
+      "source_bytes_at_export": 48188,
+      "complete_source_bytes_exported": 48188,
       "records": 3,
       "credential_replacements": 2,
-      "export_sha256": "dc394f48fbafa287ec836d91533cd8af81e8a41c1c4ab5d07c28df2f17846fe5",
-      "export_bytes": 31324,
+      "export_sha256": "1890c39d9341c1fa78208e5eef0718758395f97e31d9e0359210b73071a82d72",
+      "export_bytes": 31398,
       "tool": "codex"
     },
     {
       "file": "codex-rollout-2026-09-15T04-30-46-01a0a242-4195-79e2-945b-fe4be591608b.jsonl",
       "source_file": "rollout-2026-09-15T04-30-46-01a0a242-4195-79e2-945b-fe4be591608b.jsonl",
-      "source_bytes_at_export": 438904,
-      "complete_source_bytes_exported": 438904,
-      "records": 40,
+      "source_bytes_at_export": 1334800,
+      "complete_source_bytes_exported": 1334800,
+      "records": 117,
       "credential_replacements": 2,
-      "export_sha256": "2a633625c78d420cf2306028790e161040fcc2e42c768e18c9ab798b99a7396c",
-      "export_bytes": 422114,
+      "export_sha256": "c8aa7c7bff15baff84d28a40c24d2d32b84878b9f9f348e590df4cded4d4f371",
+      "export_bytes": 1318010,
+      "tool": "codex"
+    },
+    {
+      "file": "codex-rollout-2026-09-15T20-16-01-01a0a5a3-a8e2-7712-b5b7-1927247f6a41.jsonl",
+      "source_file": "rollout-2026-09-15T20-16-01-01a0a5a3-a8e2-7712-b5b7-1927247f6a41.jsonl",
+      "source_bytes_at_export": 838309,
+      "complete_source_bytes_exported": 838309,
+      "records": 454,
+      "credential_replacements": 25,
+      "export_sha256": "0aa20c479efd400475ffd76ec612617f7206b62a60f06e1c3602e513bca6ce2c",
+      "export_bytes": 838176,
+      "tool": "codex"
+    },
+    {
+      "file": "codex-rollout-2026-09-15T20-19-58-01a0a5a7-484c-7450-9811-6a936fd2e257.jsonl",
+      "source_file": "rollout-2026-09-15T20-19-58-01a0a5a7-484c-7450-9811-6a936fd2e257.jsonl",
+      "source_bytes_at_export": 347269,
+      "complete_source_bytes_exported": 347269,
+      "records": 80,
+      "credential_replacements": 31,
+      "export_sha256": "60f4aea49ec96546af602d02ea2a5cccbf0bb40898b6bb60e6717056217f82f2",
+      "export_bytes": 347106,
       "tool": "codex"
     }
   ]
